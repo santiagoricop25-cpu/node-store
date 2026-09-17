@@ -86,7 +86,11 @@ const RAW_PRODUCTS = [
   { cat: 'herramientas', title: 'Nivel láser autonivelante de líneas cruzadas', price: 219900, rating: 4.6, reviews: 176, stock: 25, seed: 'herr-8', brand: 'LaserLine', bullets: ['Autonivelante ±4°', 'Alcance de 20 metros', 'Incluye trípode'] },
 ];
 
-export const PRODUCTS = RAW_PRODUCTS.map((p, i) => ({
+// `let`, no `const`: replaceProducts() reasigna esto cuando llega el catálogo
+// real desde la API. Como los bindings de ES modules son "en vivo", cualquier
+// archivo que haga `import { PRODUCTS }` ve el valor actualizado sin tener
+// que volver a importar nada.
+export let PRODUCTS = RAW_PRODUCTS.map((p, i) => ({
   id: `p${i + 1}`,
   title: p.title,
   brand: p.brand,
@@ -122,6 +126,15 @@ export function searchProducts(query) {
       p.brand.toLowerCase().includes(q) ||
       p.category.toLowerCase().includes(q)
   );
+}
+
+// Llamado por ProductsContext cuando GET /products responde con éxito.
+// Se ignora una respuesta vacía (evita reemplazar 56 productos de muestra
+// por una lista en blanco si la API respondió pero la tabla está vacía).
+export function replaceProducts(apiProducts) {
+  if (Array.isArray(apiProducts) && apiProducts.length > 0) {
+    PRODUCTS = apiProducts;
+  }
 }
 
 export function getCategory(slug) {

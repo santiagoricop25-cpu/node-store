@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { CATEGORIES, PRODUCTS, getProductsByCategory } from '../data/catalog.js';
+import { useProducts } from '../context/ProductsContext.jsx';
 import ProductCard from '../components/ProductCard.jsx';
 import Reveal from '../components/Reveal.jsx';
 import './Home.css';
@@ -49,13 +50,16 @@ const POPULAR = [
 
 export default function Home() {
   const [tab, setTab] = useState('nuevos');
+  // Se suscribe al catálogo: cuando GET /products responde, PRODUCTS se
+  // reemplaza y `ready` cambia, forzando este render a leer los datos reales.
+  const { ready } = useProducts();
 
   const tabProducts = useMemo(() => {
     const list = [...PRODUCTS];
     if (tab === 'vendidos') return list.sort((a, b) => b.reviews - a.reviews).slice(0, 8);
     if (tab === 'destacados') return list.sort((a, b) => b.rating - a.rating).slice(0, 8);
     return list.slice(0, 8);
-  }, [tab]);
+  }, [tab, ready]);
 
   const discounted = PRODUCTS.filter((p) => p.oldPrice).slice(0, 4);
 

@@ -121,25 +121,33 @@
 .summary-row { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--muted); margin-bottom: 8px; }
 .summary-total { font-size: 16px; font-weight: 700; color: var(--ink); border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
 
-.pay-tabs { display: flex; gap: 20px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
-.pay-tabs button { background: none; border: none; font-size: 13.5px; font-weight: 600; color: var(--muted-2); padding: 0 0 12px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
-.pay-tabs button.active { color: var(--ink); border-bottom-color: var(--ink); }
-.pay-tabs button:disabled { cursor: not-allowed; opacity: 0.5; }
-
-.card-mock {
-  background: linear-gradient(135deg, #17181e, #0a0a0d);
-  border-radius: 16px;
-  padding: 22px;
-  color: #fff;
-  margin-bottom: 20px;
+.pay-methods { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.pay-method-card {
   display: flex;
-  flex-direction: column;
-  gap: 22px;
+  align-items: flex-start;
+  gap: 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  cursor: pointer;
 }
-.chip { width: 34px; height: 24px; border-radius: 5px; background: linear-gradient(135deg, #d9b56a, #b8863a); display: inline-block; }
-.card-mock-number { font-size: 17px; letter-spacing: 2px; }
-.card-mock-bottom { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: 0.05em; opacity: 0.85; }
-.card-mock-brand { font-weight: 700; font-style: italic; }
+.pay-method-card.selected { border-color: var(--ink); background: var(--panel-2); }
+.pay-method-card.disabled { cursor: not-allowed; opacity: 0.55; }
+.pay-method-card input { margin-top: 4px; accent-color: var(--ink); }
+.pay-method-card svg { flex-shrink: 0; color: var(--ink); margin-top: 2px; }
+.pay-method-body { display: flex; flex-direction: column; gap: 3px; }
+.pay-method-body span { font-size: 12.5px; color: var(--muted); }
+
+.pay-error {
+  background: #fdece9;
+  color: #c0392b;
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.order-number { font-size: 15px; font-weight: 700; margin: 4px 0 12px; }
 
 .payment-card label {
   display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--muted);

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { CATEGORIES, getCategory, getProductsByCategory, searchProducts } from '../data/catalog.js';
+import { useProducts } from '../context/ProductsContext.jsx';
 import ProductCard from '../components/ProductCard.jsx';
 import Reveal from '../components/Reveal.jsx';
 import { formatPrice } from '../lib/format.js';
@@ -17,6 +18,7 @@ export default function Category() {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
+  useProducts(); // se suscribe para re-renderizar cuando llegue el catálogo real
 
   const category = slug ? getCategory(slug) : null;
   const baseProducts = slug ? getProductsByCategory(slug) : searchProducts(query);

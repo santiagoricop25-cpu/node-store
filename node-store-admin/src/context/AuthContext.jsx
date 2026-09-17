@@ -23,6 +23,24 @@ export function AuthProvider({ children }) {
     })();
   }, []);
 
+  // El access token dura 15 minutos — sin esto, cualquiera dejando el panel
+  // abierto un rato se encontraría con peticiones fallando de la nada.
+  // Lo renovamos solo, cada 13 minutos, mientras haya una sesión activa.
+  useEffect(() => {
+    if (status !== 'authed') return;
+    const id = setInterval(async () => {
+      try {
+        const { accessToken: token } = await api.refresh();
+        setAccessToken(token);
+      } catch {
+        setAccessToken(null);
+        setUser(null);
+        setStatus('anon');
+      }
+    }, 13 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [status]);
+
   const login = useCallback(async (email, password) => {
     const { accessToken: token, user: u } = await api.login({ email, password });
     if (u.role !== 'admin') {

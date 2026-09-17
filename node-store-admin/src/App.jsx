@@ -3,7 +3,9 @@ import Sidebar from './components/Sidebar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
-import ComingSoon from './pages/ComingSoon.jsx';
+import Products from './pages/Products.jsx';
+import Orders from './pages/Orders.jsx';
+import Users from './pages/Users.jsx';
 
 function Shell({ children }) {
   return (
@@ -25,18 +27,9 @@ export default function App() {
             <Shell>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
-                <Route
-                  path="/productos"
-                  element={<ComingSoon title="Productos" description="La gestión de catálogo se activará cuando el backend tenga endpoints de productos (Fase 03)." />}
-                />
-                <Route
-                  path="/pedidos"
-                  element={<ComingSoon title="Pedidos" description="La gestión de pedidos se activará junto con el carrito y los pagos (Fase 04-05)." />}
-                />
-                <Route
-                  path="/usuarios"
-                  element={<ComingSoon title="Usuarios" description="La gestión de usuarios y roles llegará en una fase posterior." />}
-                />
+                <Route path="/productos" element={<Products />} />
+                <Route path="/pedidos" element={<Orders />} />
+                <Route path="/usuarios" element={<Users />} />
               </Routes>
             </Shell>
           </ProtectedRoute>

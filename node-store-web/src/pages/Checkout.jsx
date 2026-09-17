@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Truck, CreditCard, Check, Plus, X } from 'lucide-react';
+import { MapPin, Truck, CreditCard, Check, Plus, X, Banknote, Landmark } from 'lucide-react';
 import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatPrice } from '../lib/format.js';
+import { api, ApiError } from '../lib/api.js';
 import './Checkout.css';
+
+const PAYMENT_METHODS = [
+  { id: 'contra_entrega', label: 'Pago contra entrega', Icon: Banknote, note: 'Pagas en efectivo o datáfono cuando recibes el pedido.' },
+  { id: 'transferencia', label: 'Transferencia bancaria', Icon: Landmark, note: 'Te enviamos los datos de la cuenta por correo para transferir.' },
+  { id: 'tarjeta', label: 'Tarjeta de crédito', Icon: CreditCard, note: 'Cobro en línea con Wompi — disponible próximamente.', disabled: true },
+];
 
 const STEPS = [
   { n: 1, key: 'address', label: 'Dirección', Icon: MapPin },
@@ -38,7 +45,7 @@ const EMPTY_FORM = { label: '', tag: 'HOME', line: '', phone: '' };
 
 export default function Checkout() {
   const { items, subtotal, clear } = useCart();
-  const { user, isAuthed } = useAuth();
+  const { user, isAuthed, accessToken } = useAuth();
 
   const [addresses, setAddresses] = useState(loadAddresses);
   const [step, setStep] = useState(1);
@@ -46,9 +53,11 @@ export default function Checkout() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [addrForm, setAddrForm] = useState(EMPTY_FORM);
   const [shipMethod, setShipMethod] = useState('free');
-  const [payTab, setPayTab] = useState('card');
-  const [card, setCard] = useState({ name: '', number: '', exp: '', cvv: '' });
-  const [placed, setPlaced] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('contra_entrega');
+  const [placing, setPlacing] = useState(false);
+  const [placeError, setPlaceError] = useState(null);
+  const [placedOrder, setPlacedOrder] = useState(null);
+  const placed = Boolean(placedOrder);
 
   useEffect(() => {
     try {
@@ -81,14 +90,16 @@ export default function Checkout() {
   }
 
   if (placed) {
+    const methodLabel = PAYMENT_METHODS.find((m) => m.id === placedOrder.paymentMethod)?.label;
     return (
       <div className="container checkout-empty">
         <span className="empty-emoji">✅</span>
-        <h1>¡Pedido registrado!</h1>
+        <h1>¡Pedido confirmado!</h1>
+        <p className="order-number mono">Pedido {placedOrder.orderNumber}</p>
         <p>
-          Esto es una vista previa del flujo de compra — la pasarela de pago (Wompi) y el
-          sistema de pedidos todavía están en construcción, así que este pedido no se procesó
-          de verdad. Te avisaremos apenas los pagos en línea estén activos.
+          Tu pedido quedó registrado por <strong>{formatPrice(placedOrder.total)}</strong> con{' '}
+          {methodLabel?.toLowerCase()}. Te vamos a contactar al confirmar el envío. El pago en
+          línea con Wompi todavía no está activo — por ahora el pago se coordina de forma manual.
         </p>
         <Link to="/" className="btn btn-buy">Volver a la tienda</Link>
       </div>
@@ -100,10 +111,42 @@ export default function Checkout() {
   const total = subtotal + shippingPrice + tax;
   const address = addresses.find((a) => a.id === addressId);
 
-  function handlePay(e) {
+  async function handlePay(e) {
     e.preventDefault();
-    setPlaced(true);
-    clear();
+    if (!address) return;
+    setPlacing(true);
+    setPlaceError(null);
+    try {
+      const { order } = await api.createOrder(
+        {
+          items: items.map((it) => ({
+            productId: it.id,
+            title: it.title,
+            image: it.image,
+            price: it.price,
+            quantity: it.qty,
+          })),
+          shippingAddress: {
+            label: address.label,
+            line: address.line,
+            phone: address.phone,
+          },
+          paymentMethod,
+          customer: { name: user?.full_name, email: user?.email, phone: address.phone },
+        },
+        accessToken
+      );
+      setPlacedOrder(order);
+      clear();
+    } catch (err) {
+      setPlaceError(
+        err instanceof ApiError
+          ? 'No pudimos registrar tu pedido. Intenta de nuevo en un momento.'
+          : 'No hay conexión con el servidor. Revisa tu internet e intenta de nuevo.'
+      );
+    } finally {
+      setPlacing(false);
+    }
   }
 
   function handleSaveAddress(e) {
@@ -260,50 +303,36 @@ export default function Checkout() {
             </div>
 
             <form className="payment-card" onSubmit={handlePay}>
-              <h3>Pago</h3>
-              <div className="pay-tabs">
-                <button type="button" className={payTab === 'card' ? 'active' : ''} onClick={() => setPayTab('card')}>Tarjeta de crédito</button>
-                <button type="button" className={payTab === 'paypal' ? 'active' : ''} onClick={() => setPayTab('paypal')} disabled>PayPal</button>
-                <button type="button" className={payTab === 'other' ? 'active' : ''} onClick={() => setPayTab('other')} disabled>Otro</button>
+              <h3>Método de pago</h3>
+              <div className="pay-methods">
+                {PAYMENT_METHODS.map((m) => (
+                  <label
+                    key={m.id}
+                    className={`pay-method-card ${paymentMethod === m.id ? 'selected' : ''} ${m.disabled ? 'disabled' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      checked={paymentMethod === m.id}
+                      disabled={m.disabled}
+                      onChange={() => setPaymentMethod(m.id)}
+                    />
+                    <m.Icon size={20} className="icon-anim" />
+                    <div className="pay-method-body">
+                      <strong>{m.label}</strong>
+                      <span>{m.note}</span>
+                    </div>
+                  </label>
+                ))}
               </div>
 
-              <div className="card-mock">
-                <div className="card-mock-top">
-                  <span className="chip" />
-                </div>
-                <div className="card-mock-number mono">{card.number || '•••• •••• •••• ••••'}</div>
-                <div className="card-mock-bottom">
-                  <span>{card.name || 'NOMBRE DEL TITULAR'}</span>
-                  <span className="card-mock-brand">VISA</span>
-                </div>
-              </div>
-
-              <label>
-                Nombre del titular
-                <input value={card.name} onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))} required />
-              </label>
-              <label>
-                Número de tarjeta
-                <input value={card.number} onChange={(e) => setCard((c) => ({ ...c, number: e.target.value }))} required placeholder="0000 0000 0000 0000" />
-              </label>
-              <div className="form-row">
-                <label>
-                  Fecha de expiración
-                  <input value={card.exp} onChange={(e) => setCard((c) => ({ ...c, exp: e.target.value }))} required placeholder="MM/AA" />
-                </label>
-                <label>
-                  CVV
-                  <input value={card.cvv} onChange={(e) => setCard((c) => ({ ...c, cvv: e.target.value }))} required placeholder="123" />
-                </label>
-              </div>
-              <label className="checkbox-row">
-                <input type="checkbox" defaultChecked />
-                Usar la misma dirección de facturación
-              </label>
+              {placeError && <div className="pay-error">{placeError}</div>}
 
               <div className="step-actions">
                 <button type="button" className="btn" onClick={() => setStep(2)}>Volver</button>
-                <button type="submit" className="btn btn-accent">Pagar {formatPrice(total)}</button>
+                <button type="submit" className="btn btn-accent" disabled={placing}>
+                  {placing ? 'Confirmando…' : `Confirmar pedido · ${formatPrice(total)}`}
+                </button>
               </div>
             </form>
           </div>

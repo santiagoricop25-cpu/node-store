@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Heart, Truck, PackageCheck, ShieldCheck } from 'lucide-react';
 import { getProduct, getProductsByCategory, getCategory } from '../data/catalog.js';
+import { useProducts } from '../context/ProductsContext.jsx';
 import { formatPrice, formatRating } from '../lib/format.js';
 import ProductCard from '../components/ProductCard.jsx';
 import Reveal from '../components/Reveal.jsx';
@@ -17,6 +18,7 @@ const SAMPLE_REVIEWS = [
 export default function Product() {
   const { id } = useParams();
   const navigate = useNavigate();
+  useProducts(); // se suscribe para re-renderizar cuando llegue el catálogo real
   const product = getProduct(id);
   const { addItem } = useCart();
   const { isWished, toggle } = useWishlist();

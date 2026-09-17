@@ -36,6 +36,36 @@ export const api = {
   logout: () => request('/auth/logout', { method: 'POST' }),
   refresh: () => request('/auth/refresh', { method: 'POST' }),
   me: (accessToken) => request('/auth/me', { accessToken }),
+
+  // --- Dashboard ---
+  stats: (accessToken) => request('/admin/stats', { accessToken }),
+  onlineCount: (accessToken) => request('/admin/online-count', { accessToken }),
+
+  // --- Productos ---
+  products: (accessToken, params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/admin/products${qs ? `?${qs}` : ''}`, { accessToken });
+  },
+  createProduct: (accessToken, body) =>
+    request('/admin/products', { method: 'POST', body, accessToken }),
+  updateProduct: (accessToken, id, body) =>
+    request(`/admin/products/${id}`, { method: 'PUT', body, accessToken }),
+  deleteProduct: (accessToken, id) =>
+    request(`/admin/products/${id}`, { method: 'DELETE', accessToken }),
+
+  // --- Pedidos ---
+  orders: (accessToken, params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/admin/orders${qs ? `?${qs}` : ''}`, { accessToken });
+  },
+  updateOrder: (accessToken, id, body) =>
+    request(`/admin/orders/${id}`, { method: 'PATCH', body, accessToken }),
+
+  // --- Usuarios ---
+  users: (accessToken, params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/admin/users${qs ? `?${qs}` : ''}`, { accessToken });
+  },
 };
 
 export { ApiError, API_URL };

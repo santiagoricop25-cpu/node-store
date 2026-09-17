@@ -54,6 +54,21 @@ export const api = {
   verifyEmail: (token) => request(`/auth/verify-email?token=${encodeURIComponent(token)}`),
 
   oauthExchange: (code) => request('/auth/oauth/exchange', { method: 'POST', body: { code } }),
+
+  // Catálogo real (Fase 03) — si esto falla (API caída, red bloqueada), quien
+  // llama debe caer de vuelta al catálogo local para que la tienda nunca se
+  // quede en blanco.
+  products: () => request('/products'),
+
+  // Checkout (Fase 04) — crea la orden en el backend. accessToken es opcional:
+  // sin sesión, la compra sigue funcionando como invitado.
+  createOrder: (payload, accessToken) =>
+    request('/orders', { method: 'POST', body: payload, accessToken }),
+
+  myOrders: (accessToken) => request('/orders/me', { accessToken }),
+
+  pingPresence: (visitorId) =>
+    request('/presence/ping', { method: 'POST', body: { visitorId } }),
 };
 
 // URLs de redirección directa para login social (Fase 02) — el navegador
