@@ -6,6 +6,7 @@ import Home from './pages/Home.jsx';
 import Category from './pages/Category.jsx';
 import Product from './pages/Product.jsx';
 import Cart from './pages/Cart.jsx';
+import Favorites from './pages/Favorites.jsx';
 import Checkout from './pages/Checkout.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
@@ -25,27 +26,31 @@ function ScrollToTop() {
 }
 
 export default function App() {
+  const location = useLocation();
   return (
     <>
       <ScrollToTop />
       <Header />
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/categoria/:slug" element={<Category />} />
-          <Route path="/buscar" element={<Category />} />
-          <Route path="/producto/:id" element={<Product />} />
-          <Route path="/carrito" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/ingresar" element={<Login />} />
-          <Route path="/registro" element={<Register />} />
-          <Route path="/olvide-password" element={<ForgotPassword />} />
-          <Route path="/restablecer-contrasena" element={<ResetPassword />} />
-          <Route path="/verificar-correo" element={<VerifyEmail />} />
-          <Route path="/oauth/callback" element={<OAuthCallback />} />
-          <Route path="/cuenta" element={<Account />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div className="page-fade" key={location.pathname} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/categoria/:slug" element={<Category />} />
+            <Route path="/buscar" element={<Category />} />
+            <Route path="/producto/:id" element={<Product />} />
+            <Route path="/carrito" element={<Cart />} />
+            <Route path="/favoritos" element={<Favorites />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/ingresar" element={<Login />} />
+            <Route path="/registro" element={<Register />} />
+            <Route path="/olvide-password" element={<ForgotPassword />} />
+            <Route path="/restablecer-contrasena" element={<ResetPassword />} />
+            <Route path="/verificar-correo" element={<VerifyEmail />} />
+            <Route path="/oauth/callback" element={<OAuthCallback />} />
+            <Route path="/cuenta" element={<Account />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
       </main>
       <Footer />
     </>

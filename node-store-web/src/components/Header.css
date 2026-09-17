@@ -10,8 +10,10 @@
   display: flex;
   align-items: center;
   gap: 28px;
-  padding: 18px 24px;
+  padding: 16px 24px;
 }
+
+.menu-toggle { display: none; }
 
 .brand {
   font-size: 24px;
@@ -31,7 +33,9 @@
   border-radius: 999px;
   padding: 0 6px 0 18px;
   height: 44px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+.search-bar:focus-within { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(20,20,26,0.06); }
 .search-bar input {
   flex: 1;
   border: none;
@@ -64,11 +68,22 @@
 }
 .main-nav a {
   font-size: 14.5px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--ink);
   white-space: nowrap;
+  position: relative;
 }
-.main-nav a:hover { color: var(--muted); }
+.main-nav a::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -4px;
+  height: 2px;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s ease;
+}
+.main-nav a:hover::after { transform: scaleX(1); }
 
 .header-icons {
   display: flex;
@@ -108,13 +123,54 @@
   padding: 0 4px;
 }
 
-.mini-greeting {
-  padding: 6px 24px 10px;
-  font-size: 12px;
+/* Menú móvil */
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 20px;
+  border-top: 1px solid transparent;
+  transition: max-height 0.3s ease, padding 0.3s ease, border-color 0.3s ease;
+}
+.mobile-menu.open {
+  max-height: 420px;
+  padding: 14px 20px 18px;
+  border-top-color: var(--line);
+}
+.mobile-menu a {
+  padding: 12px 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+.mobile-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel-2);
+  border-radius: 999px;
+  padding: 10px 16px;
+  margin-bottom: 8px;
   color: var(--muted);
+}
+.mobile-search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  font-family: var(--sans);
+  color: var(--ink);
 }
 
 @media (max-width: 900px) {
   .main-nav { display: none; }
+  .search-bar { display: none; }
   .main-bar { gap: 14px; padding: 14px 16px; }
+  .menu-toggle { display: flex; }
+  .mobile-menu { display: flex; }
+  .brand { flex: 1; }
 }

@@ -1,20 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { MapPin, Truck, CreditCard, Check, Plus, X } from 'lucide-react';
 import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatPrice } from '../lib/format.js';
 import './Checkout.css';
 
 const STEPS = [
-  { n: 1, key: 'address', label: 'Dirección' },
-  { n: 2, key: 'shipping', label: 'Envío' },
-  { n: 3, key: 'payment', label: 'Pago' },
+  { n: 1, key: 'address', label: 'Dirección', Icon: MapPin },
+  { n: 2, key: 'shipping', label: 'Envío', Icon: Truck },
+  { n: 3, key: 'payment', label: 'Pago', Icon: CreditCard },
 ];
 
-const SAVED_ADDRESSES = [
+const DEFAULT_ADDRESSES = [
   { id: 'a1', label: 'Casa', tag: 'HOME', line: 'Carrera 45 #12-34, Medellín, Antioquia', phone: '(300) 555-0104' },
   { id: 'a2', label: 'Oficina', tag: 'OFICINA', line: 'Calle 10 #5-20, Bogotá, Cundinamarca', phone: '(310) 555-0127' },
 ];
+
+const ADDR_KEY = 'node-store-addresses';
+
+function loadAddresses() {
+  try {
+    const raw = localStorage.getItem(ADDR_KEY);
+    return raw ? JSON.parse(raw) : DEFAULT_ADDRESSES;
+  } catch {
+    return DEFAULT_ADDRESSES;
+  }
+}
 
 const SHIPPING_METHODS = [
   { id: 'free', label: 'Envío regular', price: 0, note: 'Llega en 5-7 días' },
@@ -22,16 +34,29 @@ const SHIPPING_METHODS = [
   { id: 'schedule', label: 'Programar entrega', price: 5900, note: 'Elige una fecha' },
 ];
 
+const EMPTY_FORM = { label: '', tag: 'HOME', line: '', phone: '' };
+
 export default function Checkout() {
   const { items, subtotal, clear } = useCart();
   const { user, isAuthed } = useAuth();
 
+  const [addresses, setAddresses] = useState(loadAddresses);
   const [step, setStep] = useState(1);
-  const [addressId, setAddressId] = useState('a1');
+  const [addressId, setAddressId] = useState(() => loadAddresses()[0]?.id);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addrForm, setAddrForm] = useState(EMPTY_FORM);
   const [shipMethod, setShipMethod] = useState('free');
   const [payTab, setPayTab] = useState('card');
   const [card, setCard] = useState({ name: '', number: '', exp: '', cvv: '' });
   const [placed, setPlaced] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(ADDR_KEY, JSON.stringify(addresses));
+    } catch {
+      /* almacenamiento no disponible */
+    }
+  }, [addresses]);
 
   if (items.length === 0 && !placed) {
     return (
@@ -73,7 +98,7 @@ export default function Checkout() {
   const shippingPrice = SHIPPING_METHODS.find((m) => m.id === shipMethod)?.price || 0;
   const tax = Math.round(subtotal * 0.02);
   const total = subtotal + shippingPrice + tax;
-  const address = SAVED_ADDRESSES.find((a) => a.id === addressId);
+  const address = addresses.find((a) => a.id === addressId);
 
   function handlePay(e) {
     e.preventDefault();
@@ -81,12 +106,30 @@ export default function Checkout() {
     clear();
   }
 
+  function handleSaveAddress(e) {
+    e.preventDefault();
+    if (!addrForm.label || !addrForm.line || !addrForm.phone) return;
+    const newAddr = { ...addrForm, id: `a${Date.now()}` };
+    setAddresses((prev) => [...prev, newAddr]);
+    setAddressId(newAddr.id);
+    setAddrForm(EMPTY_FORM);
+    setShowAddForm(false);
+  }
+
+  function handleRemoveAddress(id) {
+    setAddresses((prev) => prev.filter((a) => a.id !== id));
+    if (addressId === id) {
+      const remaining = addresses.filter((a) => a.id !== id);
+      setAddressId(remaining[0]?.id);
+    }
+  }
+
   return (
     <div className="container checkout-page">
       <div className="steps-bar">
         {STEPS.map((s) => (
           <div key={s.key} className={`step-node ${step === s.n ? 'active' : ''} ${step > s.n ? 'done' : ''}`}>
-            <span className="step-circle">{step > s.n ? '✓' : s.n}</span>
+            <span className="step-circle">{step > s.n ? <Check size={15} /> : <s.Icon size={15} />}</span>
             <span className="step-label">Paso {s.n} · {s.label}</span>
           </div>
         ))}
@@ -96,7 +139,7 @@ export default function Checkout() {
         <section className="checkout-step">
           <h1>Selecciona una dirección</h1>
           <div className="address-list">
-            {SAVED_ADDRESSES.map((a) => (
+            {addresses.map((a) => (
               <label key={a.id} className={`address-card ${addressId === a.id ? 'selected' : ''}`}>
                 <input
                   type="radio"
@@ -112,14 +155,55 @@ export default function Checkout() {
                   <span className="address-line">{a.line}</span>
                   <span className="address-phone mono">{a.phone}</span>
                 </div>
+                <button
+                  type="button"
+                  className="address-remove"
+                  onClick={(e) => { e.preventDefault(); handleRemoveAddress(a.id); }}
+                  aria-label="Eliminar dirección"
+                >
+                  <X size={15} />
+                </button>
               </label>
             ))}
           </div>
-          <button type="button" className="add-address-link">+ Agregar nueva dirección</button>
+
+          {showAddForm ? (
+            <form className="add-address-form" onSubmit={handleSaveAddress}>
+              <div className="form-row">
+                <label>
+                  Nombre (Casa, Oficina…)
+                  <input value={addrForm.label} onChange={(e) => setAddrForm((f) => ({ ...f, label: e.target.value }))} required />
+                </label>
+                <label>
+                  Tipo
+                  <select value={addrForm.tag} onChange={(e) => setAddrForm((f) => ({ ...f, tag: e.target.value }))}>
+                    <option value="HOME">Casa</option>
+                    <option value="OFICINA">Oficina</option>
+                  </select>
+                </label>
+              </div>
+              <label>
+                Dirección completa
+                <input value={addrForm.line} onChange={(e) => setAddrForm((f) => ({ ...f, line: e.target.value }))} required placeholder="Calle, número, ciudad, departamento" />
+              </label>
+              <label>
+                Teléfono de contacto
+                <input value={addrForm.phone} onChange={(e) => setAddrForm((f) => ({ ...f, phone: e.target.value }))} required />
+              </label>
+              <div className="step-actions">
+                <button type="button" className="btn" onClick={() => setShowAddForm(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-accent">Guardar dirección</button>
+              </div>
+            </form>
+          ) : (
+            <button type="button" className="add-address-link" onClick={() => setShowAddForm(true)}>
+              <Plus size={16} /> Agregar nueva dirección
+            </button>
+          )}
 
           <div className="step-actions">
             <Link to="/carrito" className="btn">Volver</Link>
-            <button className="btn btn-accent" onClick={() => setStep(2)}>Siguiente</button>
+            <button className="btn btn-accent" onClick={() => setStep(2)} disabled={!addressId}>Siguiente</button>
           </div>
         </section>
       )}

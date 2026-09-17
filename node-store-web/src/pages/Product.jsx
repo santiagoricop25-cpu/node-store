@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Heart, Truck, PackageCheck, ShieldCheck } from 'lucide-react';
 import { getProduct, getProductsByCategory, getCategory } from '../data/catalog.js';
 import { formatPrice, formatRating } from '../lib/format.js';
 import ProductCard from '../components/ProductCard.jsx';
+import Reveal from '../components/Reveal.jsx';
 import { useCart } from '../context/CartContext.jsx';
+import { useWishlist } from '../context/WishlistContext.jsx';
 import './Product.css';
 
 const SAMPLE_REVIEWS = [
@@ -16,11 +19,12 @@ export default function Product() {
   const navigate = useNavigate();
   const product = getProduct(id);
   const { addItem } = useCart();
+  const { isWished, toggle } = useWishlist();
   const [activeImage, setActiveImage] = useState(0);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const [wished, setWished] = useState(false);
   const [showFullDesc, setShowFullDesc] = useState(false);
+  const wished = product ? isWished(product.id) : false;
 
   if (!product) {
     return (
@@ -126,8 +130,8 @@ export default function Product() {
           </div>
 
           <div className="buy-actions">
-            <button className="btn wish-toggle" onClick={() => setWished((w) => !w)}>
-              {wished ? '♥ En favoritos' : '♡ Agregar a favoritos'}
+            <button className={`btn wish-toggle icon-anim ${wished ? 'active' : ''}`} onClick={() => toggle(product)}>
+              <Heart size={15} fill={wished ? 'currentColor' : 'none'} /> {wished ? 'En favoritos' : 'Agregar a favoritos'}
             </button>
             <button className="btn btn-buy" onClick={handleAdd} disabled={product.stock === 0}>
               {added ? '✓ Agregado' : 'Agregar al carrito'}
@@ -138,9 +142,9 @@ export default function Product() {
           </button>
 
           <div className="trust-row">
-            <div>🚚 Entrega en 1-2 días</div>
-            <div>📦 En stock hoy</div>
-            <div>🛡️ Garantía de 1 año</div>
+            <div><Truck size={15} /> Entrega en 1-2 días</div>
+            <div><PackageCheck size={15} /> En stock hoy</div>
+            <div><ShieldCheck size={15} /> Garantía de 1 año</div>
           </div>
         </aside>
       </div>
@@ -201,8 +205,10 @@ export default function Product() {
             <h2>Productos relacionados</h2>
           </div>
           <div className="related-grid">
-            {related.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {related.map((p, i) => (
+              <Reveal key={p.id} delay={i * 50}>
+                <ProductCard product={p} />
+              </Reveal>
             ))}
           </div>
         </section>

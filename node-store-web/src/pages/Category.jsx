@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { CATEGORIES, getCategory, getProductsByCategory, searchProducts } from '../data/catalog.js';
 import ProductCard from '../components/ProductCard.jsx';
+import Reveal from '../components/Reveal.jsx';
 import { formatPrice } from '../lib/format.js';
 import './Category.css';
 
@@ -134,8 +135,10 @@ export default function Category() {
             </div>
           ) : (
             <div className="results-grid">
-              {filtered.map((p) => (
-                <ProductCard key={p.id} product={p} />
+              {filtered.map((p, i) => (
+                <Reveal key={p.id} delay={(i % 6) * 40}>
+                  <ProductCard product={p} />
+                </Reveal>
               ))}
             </div>
           )}

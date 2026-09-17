@@ -63,7 +63,17 @@
 }
 .promo-card h3 { margin: 0; font-size: 18px; font-weight: 700; }
 .promo-card p { margin: 0; font-size: 13px; line-height: 1.5; }
-.promo-cta { font-size: 13px; font-weight: 700; margin-top: 6px; }
+.promo-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 6px;
+  transition: gap 0.2s ease;
+}
+.promo-card:hover .promo-cta,
+.popular-card:hover .promo-cta { gap: 9px; }
 
 .tone-light { background: var(--panel-2); color: var(--ink); }
 .tone-light p { color: var(--muted); }

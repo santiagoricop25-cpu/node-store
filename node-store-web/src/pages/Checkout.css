@@ -22,9 +22,11 @@
   margin: 0 10px;
 }
 .step-circle {
-  width: 30px; height: 30px; border-radius: 50%; background: var(--panel-2); color: var(--muted-2);
+  width: 32px; height: 32px; border-radius: 50%; background: var(--panel-2); color: var(--muted-2);
   display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
 }
+.step-node.active .step-circle { transform: scale(1.08); }
 .step-node.active .step-circle { background: var(--ink); color: #fff; }
 .step-node.done .step-circle { background: var(--ink); color: #fff; }
 .step-label { font-size: 12.5px; color: var(--muted-2); white-space: nowrap; }
@@ -44,12 +46,36 @@
   cursor: pointer;
 }
 .address-card.selected, .ship-card.selected { border-color: var(--ink); background: var(--panel-2); }
-.address-card input, .ship-card input { margin-top: 4px; accent-color: var(--ink); }
+.address-card input, .ship-card input[type="radio"] { margin-top: 4px; accent-color: var(--ink); }
 
 .address-body { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .address-head { display: flex; align-items: center; gap: 10px; }
 .address-line { font-size: 13.5px; color: var(--muted); }
 .address-phone { font-size: 12.5px; color: var(--muted-2); }
+
+.address-remove {
+  background: none; border: none; color: var(--muted-2); cursor: pointer; padding: 6px; border-radius: 50%;
+  flex-shrink: 0; display: flex;
+}
+.address-remove:hover { color: var(--bad); background: var(--bad-soft); }
+
+.add-address-form {
+  max-width: 640px;
+  border: 1.5px dashed var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.add-address-form label {
+  display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--muted);
+  margin-bottom: 12px;
+}
+.add-address-form input, .add-address-form select {
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; font-family: var(--sans); color: var(--ink);
+}
 
 .ship-card { align-items: center; justify-content: space-between; }
 .ship-body { display: flex; flex-direction: column; gap: 2px; }
@@ -58,10 +84,13 @@
 .ship-note { font-size: 12.5px; color: var(--muted-2); margin-left: auto; }
 
 .add-address-link {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
   background: none; border: 1.5px dashed var(--line); border-radius: var(--radius);
   padding: 16px; margin-top: 12px; max-width: 640px; width: 100%;
   color: var(--muted); font-size: 13.5px; font-weight: 600; cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
 }
+.add-address-link:hover { border-color: var(--ink); color: var(--ink); }
 
 .step-actions { display: flex; gap: 12px; margin-top: 28px; max-width: 640px; }
 .step-actions .btn { flex: 1; }

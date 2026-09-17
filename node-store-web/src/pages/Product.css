@@ -75,9 +75,12 @@
 .qty-control input::-webkit-outer-spin-button, .qty-control input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
 .buy-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
-.wish-toggle { font-size: 13px; }
+.wish-toggle { font-size: 13px; gap: 6px; }
+.wish-toggle.active { color: var(--bad); border-color: var(--bad); }
 
-.trust-row { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--muted); padding-top: 6px; }
+.trust-row { display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; color: var(--muted); padding-top: 6px; }
+.trust-row div { display: flex; align-items: center; gap: 8px; }
+.trust-row svg { color: var(--good); flex-shrink: 0; }
 
 /* Description */
 .description-section { margin-top: 48px; max-width: 900px; }

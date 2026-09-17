@@ -7,8 +7,8 @@ export default function Footer() {
         <div className="footer-col footer-brand-col">
           <div className="footer-brand">tienda</div>
           <p className="footer-lead">
-            Construida desde cero, a la medida — corriendo en mi propio servidor con
-            Proxmox, Coolify y Cloudflare. Todo lo que buscas, en un solo lugar.
+            Todo lo que buscas, en un solo lugar — miles de productos en tecnología,
+            hogar, moda y más, con envío rápido y pagos seguros.
           </p>
           <div className="footer-social">
             <a href="#" aria-label="Twitter" onClick={(e) => e.preventDefault()}>
@@ -52,7 +52,7 @@ export default function Footer() {
       </div>
       <div className="container footer-bottom">
         <span>&copy; {new Date().getFullYear()} tienda.ricops.com</span>
-        <span className="mono">proxmox + coolify + cloudflare</span>
+        <span>Todos los derechos reservados</span>
       </div>
     </footer>
   );

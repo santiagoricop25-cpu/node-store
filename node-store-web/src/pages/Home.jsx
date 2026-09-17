@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { CATEGORIES, PRODUCTS, getProductsByCategory } from '../data/catalog.js';
 import ProductCard from '../components/ProductCard.jsx';
+import Reveal from '../components/Reveal.jsx';
 import './Home.css';
 
 const TABS = [
@@ -66,7 +68,7 @@ export default function Home() {
             <h1>Todo lo que buscas, en un solo lugar</h1>
             <p>
               Miles de productos en tecnología, hogar, moda y más — con envío rápido y
-              pagos seguros, operada en mi propio servidor.
+              pagos seguros.
             </p>
             <Link to="/categoria/tecnologia" className="btn btn-outline-light">Comprar ahora</Link>
           </div>
@@ -77,25 +79,35 @@ export default function Home() {
       </section>
 
       <section className="container promo-row">
-        {PROMO_BANNERS.map((b) => (
-          <Link key={b.title} to={b.to} className={`promo-card tone-${b.tone}`}>
-            <h3>{b.title}</h3>
-            <p>{b.text}</p>
-            {b.cta && <span className="promo-cta">Comprar ahora →</span>}
-          </Link>
+        {PROMO_BANNERS.map((b, i) => (
+          <Reveal key={b.title} delay={i * 70} as="div">
+            <Link to={b.to} className={`promo-card tone-${b.tone}`}>
+              <h3>{b.title}</h3>
+              <p>{b.text}</p>
+              {b.cta && (
+                <span className="promo-cta">
+                  Comprar ahora <ArrowRight size={14} />
+                </span>
+              )}
+            </Link>
+          </Reveal>
         ))}
       </section>
 
       <section className="container cats-section">
-        <div className="section-head">
-          <h2>Explora por categoría</h2>
-        </div>
+        <Reveal>
+          <div className="section-head">
+            <h2>Explora por categoría</h2>
+          </div>
+        </Reveal>
         <div className="cats-row">
-          {CATEGORIES.map((c) => (
-            <Link key={c.slug} to={`/categoria/${c.slug}`} className="cat-tile">
-              <span className="cat-tile-icon">{c.emoji}</span>
-              <span>{c.name}</span>
-            </Link>
+          {CATEGORIES.map((c, i) => (
+            <Reveal key={c.slug} delay={i * 40} as="div">
+              <Link to={`/categoria/${c.slug}`} className="cat-tile">
+                <span className="cat-tile-icon">{c.emoji}</span>
+                <span>{c.name}</span>
+              </Link>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -113,49 +125,61 @@ export default function Home() {
           ))}
         </div>
         <div className="grid-4">
-          {tabProducts.map((p) => (
-            <ProductCard key={p.id} product={p} />
+          {tabProducts.map((p, i) => (
+            <Reveal key={p.id} delay={(i % 4) * 60}>
+              <ProductCard product={p} />
+            </Reveal>
           ))}
         </div>
       </section>
 
       <section className="container popular-section">
-        <div className="section-head">
-          <h2>Productos populares</h2>
-        </div>
+        <Reveal>
+          <div className="section-head">
+            <h2>Productos populares</h2>
+          </div>
+        </Reveal>
         <div className="popular-row">
-          {POPULAR.map((b) => (
-            <Link key={b.slug} to={`/categoria/${b.slug}`} className={`popular-card tone-${b.tone}`}>
-              <h3>{b.title}</h3>
-              <p>{b.text}</p>
-              <span className="promo-cta">Comprar ahora →</span>
-            </Link>
+          {POPULAR.map((b, i) => (
+            <Reveal key={b.slug} delay={i * 70} as="div">
+              <Link to={`/categoria/${b.slug}`} className={`popular-card tone-${b.tone}`}>
+                <h3>{b.title}</h3>
+                <p>{b.text}</p>
+                <span className="promo-cta">
+                  Comprar ahora <ArrowRight size={14} />
+                </span>
+              </Link>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {discounted.length > 0 && (
         <section className="container discounts-section">
-          <div className="section-head">
-            <h2>Descuentos hasta -50%</h2>
-            <Link to="/categoria/tecnologia" className="see-all">Ver todo →</Link>
-          </div>
+          <Reveal>
+            <div className="section-head">
+              <h2>Descuentos hasta -50%</h2>
+              <Link to="/categoria/tecnologia" className="see-all">Ver todo →</Link>
+            </div>
+          </Reveal>
           <div className="grid-4">
-            {discounted.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {discounted.map((p, i) => (
+              <Reveal key={p.id} delay={i * 60}>
+                <ProductCard product={p} />
+              </Reveal>
             ))}
           </div>
         </section>
       )}
 
-      <section className="container sale-banner">
+      <Reveal as="section" className="container sale-banner">
         <div className="sale-banner-inner">
           <span className="hero-eyebrow">Oferta de temporada</span>
           <h2>Gran Venta de Verano</h2>
           <p>Hasta 50% de descuento en cientos de productos seleccionados, por tiempo limitado.</p>
           <Link to="/categoria/tecnologia" className="btn btn-outline-light">Comprar ahora</Link>
         </div>
-      </section>
+      </Reveal>
     </div>
   );
 }
