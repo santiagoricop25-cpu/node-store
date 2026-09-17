@@ -1,34 +1,37 @@
 :root {
-  --bg: #ececea;
+  --bg: #ffffff;
   --panel: #ffffff;
-  --panel-2: #f6f6f5;
-  --ink: #17181a;
-  --muted: #6f7275;
-  --muted-2: #9a9d9f;
-  --line: #d7d7d5;
-  --accent: #f2a93b;
-  --accent-ink: #7a4c05;
-  --accent-soft: #fdf1dd;
+  --panel-2: #f5f5f7;
+  --panel-3: #eef0f2;
+  --ink: #14141a;
+  --muted: #6b7280;
+  --muted-2: #9a9da3;
+  --line: #e6e6e9;
+  --dark: #0d0d10;
+  --dark-2: #191a1f;
+  --accent: #ffa53d;
+  --accent-2: #ff8a00;
   --good: #1d8a4a;
   --good-soft: #e4f6ea;
-  --bad: #c0392b;
-  --bad-soft: #fbe8e6;
-  --link: #1a5fb4;
+  --bad: #e0402c;
+  --bad-soft: #fdece9;
+  --link: #14141a;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  --radius: 12px;
+  --sans: "Poppins", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --radius: 14px;
   --radius-sm: 8px;
-  --shadow-card: 0 1px 2px rgba(23, 24, 26, 0.04), 0 1px 1px rgba(23, 24, 26, 0.03);
-  --shadow-pop: 0 12px 32px rgba(23, 24, 26, 0.14);
+  --radius-lg: 20px;
+  --shadow-card: 0 1px 3px rgba(15, 15, 20, 0.06), 0 1px 1px rgba(15, 15, 20, 0.04);
+  --shadow-pop: 0 16px 40px rgba(15, 15, 20, 0.16);
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.06) 1px, transparent 0) 0 0/22px 22px,
-    var(--bg);
+  background: var(--bg);
   color: var(--ink);
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
@@ -45,65 +48,69 @@ img { max-width: 100%; display: block; }
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 6vw;
+  padding: 0 24px;
 }
-@media (min-width: 1400px) {
-  .container { padding: 0 40px; }
+@media (max-width: 640px) {
+  .container { padding: 0 16px; }
 }
 
 /* Botones compartidos */
 .btn {
   font-family: var(--sans);
   font-weight: 600;
-  font-size: 13.5px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--panel);
+  font-size: 14px;
+  padding: 12px 22px;
+  border-radius: 10px;
+  border: 1.5px solid var(--ink);
+  background: #fff;
   color: var(--ink);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease;
+  transition: transform 0.08s ease, background 0.15s ease, color 0.15s ease;
   white-space: nowrap;
 }
-.btn:hover { border-color: var(--muted-2); }
+.btn:hover { background: var(--panel-2); }
 .btn:active { transform: scale(0.98); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btn-accent {
+.btn-accent,
+.btn-buy {
   background: var(--ink);
   color: #fff;
   border-color: var(--ink);
 }
-.btn-accent:hover { background: #000; }
+.btn-accent:hover,
+.btn-buy:hover { background: #000; }
 
-.btn-buy {
-  background: var(--accent);
-  color: var(--accent-ink);
-  border-color: var(--accent);
+.btn-outline-light {
+  background: transparent;
+  color: #fff;
+  border-color: #fff;
 }
-.btn-buy:hover { background: #ed9c25; }
+.btn-outline-light:hover { background: rgba(255, 255, 255, 0.12); }
 
 .btn-block { width: 100%; }
-.btn-sm { padding: 6px 12px; font-size: 12.5px; }
+.btn-sm { padding: 8px 14px; font-size: 12.5px; border-radius: 8px; }
 
 .pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  font-family: var(--mono);
-  padding: 3px 10px;
+  font-weight: 600;
+  padding: 4px 11px;
   border-radius: 999px;
   border: 1px solid var(--line);
   color: var(--muted);
-  background: var(--panel);
+  background: var(--panel-2);
 }
 .pill.good { color: var(--good); background: var(--good-soft); border-color: transparent; }
-.pill.accent { color: var(--accent-ink); background: var(--accent-soft); border-color: transparent; }
+.pill.accent { color: #7a4c05; background: #fff3de; border-color: transparent; }
+.pill.dark { color: #fff; background: var(--ink); border-color: transparent; }
+.pill.outline { background: #fff; border-color: var(--ink); color: var(--ink); }
 
 .card {
   background: var(--panel);
@@ -115,14 +122,14 @@ img { max-width: 100%; display: block; }
 .dot {
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 0 0 rgba(242, 169, 59, 0.5);
+  box-shadow: 0 0 0 0 rgba(255, 165, 61, 0.5);
   animation: pulse 2s infinite;
   flex-shrink: 0;
 }
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(242, 169, 59, 0.45); }
-  70% { box-shadow: 0 0 0 7px rgba(242, 169, 59, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(242, 169, 59, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(255, 165, 61, 0.45); }
+  70% { box-shadow: 0 0 0 7px rgba(255, 165, 61, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 165, 61, 0); }
 }
 
 .skeleton {
@@ -140,9 +147,23 @@ img { max-width: 100%; display: block; }
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
 
-::selection { background: var(--accent-soft); color: var(--accent-ink); }
+::selection { background: #ffe6c2; color: #7a4c05; }
 
 ::-webkit-scrollbar { height: 10px; width: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted-2); }
+
+/* Encabezados de sección compartidos */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  gap: 16px;
+}
+.section-head h2 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0;
+}

@@ -47,93 +47,100 @@ export default function Category() {
     }
   }, [baseProducts, sort, maxPrice, minRating, freeShippingOnly]);
 
-  const title = category ? `${category.emoji} ${category.name}` : `Resultados para "${query}"`;
+  const title = category ? category.name : `Resultados para "${query}"`;
+  const breadcrumbTail = category ? category.name : 'Búsqueda';
 
   return (
     <div className="container category-page">
-      <aside className="filters card">
-        <h3>Filtrar</h3>
+      <nav className="breadcrumb">
+        <Link to="/">Inicio</Link> / <span>Catálogo</span> / <span>{breadcrumbTail}</span>
+      </nav>
 
-        <div className="filter-group">
-          <h4>Categoría</h4>
-          <ul className="filter-cats">
-            {CATEGORIES.map((c) => (
-              <li key={c.slug}>
-                <Link to={`/categoria/${c.slug}`} className={c.slug === slug ? 'active' : ''}>
-                  {c.emoji} {c.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="filter-group">
-          <h4>Precio máximo</h4>
-          <input
-            type="range"
-            min={0}
-            max={priceCeiling}
-            step={10000}
-            value={maxPrice ?? priceCeiling}
-            onChange={(e) => setMaxPrice(Number(e.target.value))}
-          />
-          <div className="filter-price-value mono">hasta {formatPrice(maxPrice ?? priceCeiling)}</div>
-        </div>
-
-        <div className="filter-group">
-          <h4>Calificación mínima</h4>
-          {[4.5, 4, 3.5, 0].map((r) => (
-            <label key={r} className="filter-radio">
-              <input
-                type="radio"
-                name="rating"
-                checked={minRating === r}
-                onChange={() => setMinRating(r)}
-              />
-              {r > 0 ? `${r}+ estrellas` : 'Todas'}
-            </label>
-          ))}
-        </div>
-
-        <div className="filter-group">
-          <label className="filter-checkbox">
-            <input
-              type="checkbox"
-              checked={freeShippingOnly}
-              onChange={(e) => setFreeShippingOnly(e.target.checked)}
-            />
-            Solo envío gratis
-          </label>
-        </div>
-      </aside>
-
-      <section className="results">
-        <div className="results-head">
-          <h1>{title}</h1>
-          <div className="results-controls">
-            <span className="results-count">{filtered.length} resultados</span>
-            <select value={sort} onChange={(e) => setSort(e.target.value)}>
-              {SORTS.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
+      <div className="category-layout">
+        <aside className="filters-sidebar">
+          <div className="filter-block">
+            <h4>Categoría</h4>
+            <ul className="filter-cats">
+              {CATEGORIES.map((c) => (
+                <li key={c.slug}>
+                  <Link to={`/categoria/${c.slug}`} className={c.slug === slug ? 'active' : ''}>
+                    <span>{c.emoji} {c.name}</span>
+                    <span className="cat-count mono">{getProductsByCategory(c.slug).length}</span>
+                  </Link>
+                </li>
               ))}
-            </select>
+            </ul>
           </div>
-        </div>
 
-        {filtered.length === 0 ? (
-          <div className="empty-state card">
-            <p>No encontramos productos con esos filtros.</p>
-          </div>
-        ) : (
-          <div className="results-grid">
-            {filtered.map((p) => (
-              <ProductCard key={p.id} product={p} />
+          <details className="filter-block accordion" open>
+            <summary>Precio máximo</summary>
+            <input
+              type="range"
+              min={0}
+              max={priceCeiling}
+              step={10000}
+              value={maxPrice ?? priceCeiling}
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
+            />
+            <div className="filter-price-value mono">hasta {formatPrice(maxPrice ?? priceCeiling)}</div>
+          </details>
+
+          <details className="filter-block accordion" open>
+            <summary>Calificación mínima</summary>
+            {[4.5, 4, 3.5, 0].map((r) => (
+              <label key={r} className="filter-radio">
+                <input
+                  type="radio"
+                  name="rating"
+                  checked={minRating === r}
+                  onChange={() => setMinRating(r)}
+                />
+                {r > 0 ? `${r}+ estrellas` : 'Todas'}
+              </label>
             ))}
+          </details>
+
+          <details className="filter-block accordion">
+            <summary>Envío</summary>
+            <label className="filter-checkbox">
+              <input
+                type="checkbox"
+                checked={freeShippingOnly}
+                onChange={(e) => setFreeShippingOnly(e.target.checked)}
+              />
+              Solo envío gratis
+            </label>
+          </details>
+        </aside>
+
+        <section className="results">
+          <div className="results-head">
+            <h1>{title}</h1>
+            <div className="results-controls">
+              <span className="results-count">Productos seleccionados: {filtered.length}</span>
+              <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                {SORTS.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-        )}
-      </section>
+
+          {filtered.length === 0 ? (
+            <div className="empty-state">
+              <p>No encontramos productos con esos filtros.</p>
+            </div>
+          ) : (
+            <div className="results-grid">
+              {filtered.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

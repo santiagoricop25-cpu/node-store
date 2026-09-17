@@ -1,23 +1,37 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatPrice } from '../lib/format.js';
 import './Checkout.css';
 
+const STEPS = [
+  { n: 1, key: 'address', label: 'Dirección' },
+  { n: 2, key: 'shipping', label: 'Envío' },
+  { n: 3, key: 'payment', label: 'Pago' },
+];
+
+const SAVED_ADDRESSES = [
+  { id: 'a1', label: 'Casa', tag: 'HOME', line: 'Carrera 45 #12-34, Medellín, Antioquia', phone: '(300) 555-0104' },
+  { id: 'a2', label: 'Oficina', tag: 'OFICINA', line: 'Calle 10 #5-20, Bogotá, Cundinamarca', phone: '(310) 555-0127' },
+];
+
+const SHIPPING_METHODS = [
+  { id: 'free', label: 'Envío regular', price: 0, note: 'Llega en 5-7 días' },
+  { id: 'express', label: 'Envío express', price: 12900, note: 'Llega en 1-2 días' },
+  { id: 'schedule', label: 'Programar entrega', price: 5900, note: 'Elige una fecha' },
+];
+
 export default function Checkout() {
   const { items, subtotal, clear } = useCart();
   const { user, isAuthed } = useAuth();
-  const navigate = useNavigate();
-  const [form, setForm] = useState({
-    fullName: user?.full_name || '',
-    address: '',
-    city: '',
-    phone: '',
-  });
+
+  const [step, setStep] = useState(1);
+  const [addressId, setAddressId] = useState('a1');
+  const [shipMethod, setShipMethod] = useState('free');
+  const [payTab, setPayTab] = useState('card');
+  const [card, setCard] = useState({ name: '', number: '', exp: '', cvv: '' });
   const [placed, setPlaced] = useState(false);
-  const shipping = subtotal >= 100000 ? 0 : 12900;
-  const total = subtotal + shipping;
 
   if (items.length === 0 && !placed) {
     return (
@@ -41,16 +55,6 @@ export default function Checkout() {
     );
   }
 
-  function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-  }
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    setPlaced(true);
-    clear();
-  }
-
   if (placed) {
     return (
       <div className="container checkout-empty">
@@ -66,69 +70,161 @@ export default function Checkout() {
     );
   }
 
+  const shippingPrice = SHIPPING_METHODS.find((m) => m.id === shipMethod)?.price || 0;
+  const tax = Math.round(subtotal * 0.02);
+  const total = subtotal + shippingPrice + tax;
+  const address = SAVED_ADDRESSES.find((a) => a.id === addressId);
+
+  function handlePay(e) {
+    e.preventDefault();
+    setPlaced(true);
+    clear();
+  }
+
   return (
     <div className="container checkout-page">
-      <h1>Finalizar compra</h1>
-      <div className="checkout-layout">
-        <form className="checkout-form card" onSubmit={handleSubmit}>
-          <h3>Datos de envío</h3>
-          <label>
-            Nombre completo
-            <input name="fullName" value={form.fullName} onChange={handleChange} required />
-          </label>
-          <label>
-            Dirección
-            <input name="address" value={form.address} onChange={handleChange} required placeholder="Calle, número, barrio" />
-          </label>
-          <div className="form-row">
-            <label>
-              Ciudad
-              <input name="city" value={form.city} onChange={handleChange} required />
-            </label>
-            <label>
-              Teléfono
-              <input name="phone" value={form.phone} onChange={handleChange} required />
-            </label>
+      <div className="steps-bar">
+        {STEPS.map((s) => (
+          <div key={s.key} className={`step-node ${step === s.n ? 'active' : ''} ${step > s.n ? 'done' : ''}`}>
+            <span className="step-circle">{step > s.n ? '✓' : s.n}</span>
+            <span className="step-label">Paso {s.n} · {s.label}</span>
           </div>
-
-          <h3>Pago</h3>
-          <div className="payment-placeholder">
-            <span>💳</span>
-            <div>
-              <strong>Pagos en línea próximamente</strong>
-              <p>Estamos integrando Wompi como pasarela de pago segura.</p>
-            </div>
-          </div>
-
-          <button type="submit" className="btn btn-buy btn-block">
-            Confirmar pedido (vista previa)
-          </button>
-        </form>
-
-        <aside className="checkout-summary card">
-          <h3>Tu pedido</h3>
-          <ul className="summary-items">
-            {items.map((it) => (
-              <li key={it.id}>
-                <span>{it.title} × {it.qty}</span>
-                <span className="mono">{formatPrice(it.price * it.qty)}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="summary-row">
-            <span>Subtotal</span>
-            <span className="mono">{formatPrice(subtotal)}</span>
-          </div>
-          <div className="summary-row">
-            <span>Envío</span>
-            <span className="mono">{shipping === 0 ? 'Gratis' : formatPrice(shipping)}</span>
-          </div>
-          <div className="summary-row summary-total">
-            <span>Total</span>
-            <span className="mono">{formatPrice(total)}</span>
-          </div>
-        </aside>
+        ))}
       </div>
+
+      {step === 1 && (
+        <section className="checkout-step">
+          <h1>Selecciona una dirección</h1>
+          <div className="address-list">
+            {SAVED_ADDRESSES.map((a) => (
+              <label key={a.id} className={`address-card ${addressId === a.id ? 'selected' : ''}`}>
+                <input
+                  type="radio"
+                  name="address"
+                  checked={addressId === a.id}
+                  onChange={() => setAddressId(a.id)}
+                />
+                <div className="address-body">
+                  <div className="address-head">
+                    <strong>{a.label}</strong>
+                    <span className={`pill ${a.tag === 'HOME' ? 'dark' : 'outline'}`}>{a.tag}</span>
+                  </div>
+                  <span className="address-line">{a.line}</span>
+                  <span className="address-phone mono">{a.phone}</span>
+                </div>
+              </label>
+            ))}
+          </div>
+          <button type="button" className="add-address-link">+ Agregar nueva dirección</button>
+
+          <div className="step-actions">
+            <Link to="/carrito" className="btn">Volver</Link>
+            <button className="btn btn-accent" onClick={() => setStep(2)}>Siguiente</button>
+          </div>
+        </section>
+      )}
+
+      {step === 2 && (
+        <section className="checkout-step">
+          <h1>Método de envío</h1>
+          <div className="ship-list">
+            {SHIPPING_METHODS.map((m) => (
+              <label key={m.id} className={`ship-card ${shipMethod === m.id ? 'selected' : ''}`}>
+                <input
+                  type="radio"
+                  name="shipping"
+                  checked={shipMethod === m.id}
+                  onChange={() => setShipMethod(m.id)}
+                />
+                <div className="ship-body">
+                  <strong>{m.price === 0 ? 'Gratis' : formatPrice(m.price)}</strong>
+                  <span>{m.label}</span>
+                </div>
+                <span className="ship-note">{m.note}</span>
+              </label>
+            ))}
+          </div>
+
+          <div className="step-actions">
+            <button className="btn" onClick={() => setStep(1)}>Volver</button>
+            <button className="btn btn-accent" onClick={() => setStep(3)}>Siguiente</button>
+          </div>
+        </section>
+      )}
+
+      {step === 3 && (
+        <section className="checkout-step payment-step">
+          <div className="payment-grid">
+            <div className="order-summary-card">
+              <h3>Resumen</h3>
+              <ul className="summary-items">
+                {items.map((it) => (
+                  <li key={it.id}>
+                    <span>{it.title} × {it.qty}</span>
+                    <span className="mono">{formatPrice(it.price * it.qty)}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="summary-meta">
+                <div><span>Dirección</span><span>{address?.line}</span></div>
+                <div><span>Método de envío</span><span>{SHIPPING_METHODS.find((m) => m.id === shipMethod)?.label}</span></div>
+              </div>
+              <div className="summary-row"><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
+              <div className="summary-row"><span>Impuesto estimado</span><span>{formatPrice(tax)}</span></div>
+              <div className="summary-row"><span>Envío</span><span>{shippingPrice === 0 ? 'Gratis' : formatPrice(shippingPrice)}</span></div>
+              <div className="summary-row summary-total"><span>Total</span><span>{formatPrice(total)}</span></div>
+            </div>
+
+            <form className="payment-card" onSubmit={handlePay}>
+              <h3>Pago</h3>
+              <div className="pay-tabs">
+                <button type="button" className={payTab === 'card' ? 'active' : ''} onClick={() => setPayTab('card')}>Tarjeta de crédito</button>
+                <button type="button" className={payTab === 'paypal' ? 'active' : ''} onClick={() => setPayTab('paypal')} disabled>PayPal</button>
+                <button type="button" className={payTab === 'other' ? 'active' : ''} onClick={() => setPayTab('other')} disabled>Otro</button>
+              </div>
+
+              <div className="card-mock">
+                <div className="card-mock-top">
+                  <span className="chip" />
+                </div>
+                <div className="card-mock-number mono">{card.number || '•••• •••• •••• ••••'}</div>
+                <div className="card-mock-bottom">
+                  <span>{card.name || 'NOMBRE DEL TITULAR'}</span>
+                  <span className="card-mock-brand">VISA</span>
+                </div>
+              </div>
+
+              <label>
+                Nombre del titular
+                <input value={card.name} onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))} required />
+              </label>
+              <label>
+                Número de tarjeta
+                <input value={card.number} onChange={(e) => setCard((c) => ({ ...c, number: e.target.value }))} required placeholder="0000 0000 0000 0000" />
+              </label>
+              <div className="form-row">
+                <label>
+                  Fecha de expiración
+                  <input value={card.exp} onChange={(e) => setCard((c) => ({ ...c, exp: e.target.value }))} required placeholder="MM/AA" />
+                </label>
+                <label>
+                  CVV
+                  <input value={card.cvv} onChange={(e) => setCard((c) => ({ ...c, cvv: e.target.value }))} required placeholder="123" />
+                </label>
+              </div>
+              <label className="checkbox-row">
+                <input type="checkbox" defaultChecked />
+                Usar la misma dirección de facturación
+              </label>
+
+              <div className="step-actions">
+                <button type="button" className="btn" onClick={() => setStep(2)}>Volver</button>
+                <button type="submit" className="btn btn-accent">Pagar {formatPrice(total)}</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
