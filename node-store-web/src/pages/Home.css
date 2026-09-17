@@ -1,0 +1,94 @@
+.hero {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+  padding-top: 32px;
+  align-items: stretch;
+}
+
+.hero-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 44px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: var(--shadow-card);
+}
+
+.hero-panel .eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.hero-panel h1 {
+  font-size: clamp(1.9rem, 3.6vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  margin: 0;
+}
+.cursor {
+  display: inline-block;
+  width: 4px;
+  height: 0.85em;
+  background: var(--ink);
+  margin-left: 6px;
+  vertical-align: -0.1em;
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+.hero-panel .lead { margin-top: 16px; font-size: 15px; color: var(--muted); line-height: 1.6; max-width: 46ch; }
+
+.hero-ctas { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+
+.hero-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.badge-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+}
+.badge-icon { font-size: 26px; }
+.badge-card div { display: flex; flex-direction: column; }
+.badge-card strong { font-size: 13.5px; }
+.badge-card span { font-size: 12px; color: var(--muted); }
+
+.category-shortcuts {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+.shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--ink);
+}
+.shortcut:hover { border-color: var(--muted-2); box-shadow: var(--shadow-card); }
+.shortcut-emoji { font-size: 24px; }
+
+@media (max-width: 980px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-badges { flex-direction: row; }
+  .category-shortcuts { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 560px) {
+  .hero-panel { padding: 30px 22px; }
+  .hero-badges { flex-direction: column; }
+  .category-shortcuts { grid-template-columns: repeat(3, 1fr); }
+}
