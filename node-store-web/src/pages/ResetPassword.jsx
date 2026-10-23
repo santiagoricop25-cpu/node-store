@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
+import { friendlyError } from '../lib/errors.js';
 import './Auth.css';
 
 export default function ResetPassword() {
@@ -25,7 +26,7 @@ export default function ResetPassword() {
       setDone(true);
       setTimeout(() => navigate('/ingresar'), 1800);
     } catch (err) {
-      setError(err.message || 'El enlace no es válido o ya expiró.');
+      setError(friendlyError(err, 'El enlace no es válido o ya expiró.'));
     } finally {
       setLoading(false);
     }
@@ -34,10 +35,10 @@ export default function ResetPassword() {
   if (!token) {
     return (
       <div className="auth-page">
-        <div className="auth-card card">
+        <div className="auth-card">
           <h1>Enlace inválido</h1>
           <p>Falta el token de recuperación. Solicita uno nuevo desde el correo.</p>
-          <Link to="/olvide-password" className="btn btn-buy btn-block">Solicitar de nuevo</Link>
+          <Link to="/olvide-password" className="btn btn-accent btn-block">Solicitar de nuevo</Link>
         </div>
       </div>
     );
@@ -45,20 +46,19 @@ export default function ResetPassword() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card card">
-        <div className="auth-eyebrow">// tienda.ricops.com</div>
+      <div className="auth-card">
         <h1>Define tu nueva contraseña</h1>
 
         {done ? (
-          <div className="auth-success">Contraseña actualizada — redirigiendo a ingresar…</div>
+          <div className="notice notice-ok" role="status">Contraseña actualizada — redirigiendo a ingresar…</div>
         ) : (
           <form className="auth-form" onSubmit={handleSubmit}>
-            {error && <div className="auth-error">{error}</div>}
-            <label>
+            {error && <div className="notice notice-error" role="alert">{error}</div>}
+            <label className="field">
               Nueva contraseña
               <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
             </label>
-            <button className="btn btn-buy btn-block" type="submit" disabled={loading}>
+            <button className="btn btn-accent btn-block" type="submit" disabled={loading}>
               {loading ? 'Guardando…' : 'Guardar contraseña'}
             </button>
           </form>

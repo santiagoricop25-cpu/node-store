@@ -6,33 +6,31 @@ export default function Account() {
   const { user, status, logout } = useAuth();
 
   if (status === 'checking') return null;
-  if (status === 'anon') return <Navigate to="/ingresar" replace />;
+  if (status === 'anon') return <Navigate to="/ingresar" replace state={{ from: '/cuenta' }} />;
+
+  const firstName = user?.full_name?.split(' ')[0];
 
   return (
-    <div className="account-page">
-      <h1>Mi cuenta</h1>
-      <div className="account-card card">
-        <div className="account-row">
-          <span>Nombre</span>
-          <span>{user?.full_name}</span>
+    <div className="container page account-page">
+      <div className="account-layout">
+        <div>
+          <h1 className="account-hello">Hola{firstName ? `, ${firstName}` : ''}</h1>
+          <p>Estos son los datos con los que te reconocemos en la tienda.</p>
         </div>
-        <div className="account-row">
-          <span>Correo</span>
-          <span>{user?.email}</span>
+        <div>
+          <dl className="account-data">
+            <div><dt>Nombre</dt><dd>{user?.full_name}</dd></div>
+            <div><dt>Correo</dt><dd>{user?.email}</dd></div>
+            <div><dt>Correo verificado</dt><dd>{user?.email_verified_at ? 'Sí' : 'Pendiente: revisa tu bandeja de entrada'}</dd></div>
+            <div><dt>Tipo de cuenta</dt><dd>{user?.role === 'admin' ? 'Administrador' : 'Cliente'}</dd></div>
+          </dl>
+          <div className="account-actions">
+            <Link to="/favoritos" className="btn">Mis favoritos</Link>
+            <Link to="/carrito" className="btn">Mi carrito</Link>
+            <button type="button" className="btn btn-light" onClick={logout}>Cerrar sesión</button>
+          </div>
         </div>
-        <div className="account-row">
-          <span>Correo verificado</span>
-          <span>{user?.email_verified_at ? 'Sí' : 'Pendiente'}</span>
-        </div>
-        <div className="account-row">
-          <span>Rol</span>
-          <span>{user?.role === 'admin' ? 'Administrador' : 'Cliente'}</span>
-        </div>
-        <button className="btn btn-block" onClick={logout}>Cerrar sesión</button>
       </div>
-      <p className="auth-switch" style={{ marginTop: 16 }}>
-        <Link to="/">← Volver a la tienda</Link>
-      </p>
     </div>
   );
 }

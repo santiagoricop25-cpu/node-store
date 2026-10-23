@@ -1,0 +1,106 @@
+/* ---------- Barras verticales ---------- */
+.bar-chart { position: relative; }
+.bar-plot { position: relative; margin-left: 64px; }
+.bar-grid { position: absolute; inset: 0; pointer-events: none; }
+.bar-gridline { position: absolute; left: 0; right: 0; border-top: 1px solid var(--grid); }
+.bar-gridline span {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: -8px;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.bar-columns { position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 2px; }
+.bar-col { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; cursor: default; }
+.bar {
+  width: min(70%, 28px);
+  min-height: 2px;
+  background: var(--series-1);
+  border-radius: 4px 4px 0 0;
+  transform-origin: bottom;
+  transition: transform 0.7s var(--ease-out), opacity 0.2s ease, background 0.2s ease;
+}
+.bar-col.hover .bar { background: #1c5cab; }
+.bar-col.dim .bar { opacity: 0.45; }
+.bar-axis { margin: var(--space-2) 0 0 64px; }
+.bar-axis { position: relative; height: 18px; }
+.bar-axis span { position: absolute; transform: translateX(-50%); font-size: 12px; color: var(--muted); white-space: nowrap; }
+.bar-axis span.first { transform: none; }
+.bar-axis span.last { transform: translateX(-100%); }
+
+.chart-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  font-size: 12px;
+  z-index: 5;
+  pointer-events: none;
+}
+.bar-col .chart-tip.left { left: auto; right: 0; transform: none; }
+.bar-col .chart-tip.right { left: 0; transform: none; }
+.chart-tip strong { font-size: 15px; }
+.chart-tip span { color: #c7c7cc; }
+
+/* ---------- Anillo ---------- */
+.donut { display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap; }
+.donut-figure { position: relative; flex-shrink: 0; }
+.donut-seg { transition: stroke-dasharray 0.9s var(--ease-out), stroke-width 0.2s ease, opacity 0.2s ease; cursor: pointer; }
+.donut-seg.dim { opacity: 0.35; }
+.donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  padding: 0 28px;
+}
+.donut-center strong { font-size: 28px; line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.donut-center span { font-size: 12px; color: var(--muted); }
+
+.chart-legend { list-style: none; margin: 0; padding: 0; flex: 1; min-width: 180px; display: flex; flex-direction: column; }
+.chart-legend li {
+  display: grid;
+  grid-template-columns: 10px 1fr auto 40px;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 14px;
+  cursor: default;
+  transition: opacity 0.2s ease;
+}
+.chart-legend li:last-child { border-bottom: 0; }
+.chart-legend li.dim { opacity: 0.4; }
+.chart-legend i { width: 10px; height: 10px; border-radius: 50%; }
+.chart-legend span { text-transform: capitalize; }
+.chart-legend strong { font-variant-numeric: tabular-nums; }
+.chart-legend em { font-style: normal; color: var(--muted); text-align: right; font-size: 13px; font-variant-numeric: tabular-nums; }
+
+/* ---------- Barras horizontales ---------- */
+.hbars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.hbar-head { display: flex; justify-content: space-between; gap: var(--space-4); font-size: 14px; margin-bottom: 6px; }
+.hbar-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.hbar-head strong { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hbar-track { height: 10px; border-radius: var(--radius-pill); background: var(--bg); overflow: hidden; }
+.hbar-fill { height: 100%; border-radius: inherit; transition: width 0.8s var(--ease-out); }
+
+.sparkline { display: block; }
+.chart-empty { color: var(--muted); font-size: 14px; margin: 0; }
+
+@media (max-width: 560px) {
+  .bar-plot, .bar-axis { margin-left: 52px; }
+  .donut { justify-content: center; }
+}

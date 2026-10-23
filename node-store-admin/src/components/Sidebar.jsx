@@ -15,11 +15,17 @@ export default function Sidebar() {
   return (
     <aside className="admin-sidebar">
       <div className="admin-brand">tienda<span>admin</span></div>
-      <nav className="admin-nav">
+      <nav className="admin-nav" aria-label="Secciones">
         {LINKS.map((l) => (
-          <NavLink key={l.to} to={l.to} end={l.end} className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
-            <l.icon size={18} />
-            {l.label}
+          <NavLink
+            key={l.to}
+            to={l.to}
+            end={l.end}
+            aria-label={l.label}
+            className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}
+          >
+            <l.icon size={18} aria-hidden="true" />
+            <span className="label">{l.label}</span>
           </NavLink>
         ))}
       </nav>
@@ -29,7 +35,7 @@ export default function Sidebar() {
           <strong>{user?.full_name || 'Administrador'}</strong>
           <span>{user?.email}</span>
         </div>
-        <button className="admin-logout" onClick={logout} aria-label="Cerrar sesión">
+        <button className="admin-logout" onClick={logout} aria-label="Cerrar sesión" title="Cerrar sesión">
           <LogOut size={17} />
         </button>
       </div>

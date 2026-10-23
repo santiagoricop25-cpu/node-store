@@ -3,16 +3,7 @@ import { Plus, Pencil, Trash2, X, Tag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { api, ApiError } from '../lib/api.js';
 import { formatPrice } from '../lib/format.js';
-
-const CATEGORIES = [
-  { slug: 'tecnologia', name: 'Tecnología' },
-  { slug: 'hogar', name: 'Hogar y Cocina' },
-  { slug: 'moda', name: 'Moda' },
-  { slug: 'deportes', name: 'Deportes y Aire Libre' },
-  { slug: 'belleza', name: 'Belleza y Cuidado Personal' },
-  { slug: 'juguetes', name: 'Juguetes y Bebés' },
-  { slug: 'herramientas', name: 'Herramientas' },
-];
+import { CATEGORIES } from '../lib/catalog.js';
 
 const EMPTY_FORM = {
   title: '',
@@ -140,7 +131,7 @@ export default function Products() {
               <tr>
                 <th>Producto</th>
                 <th>Categoría</th>
-                <th>Precio</th>
+                <th className="num">Precio</th>
                 <th>Stock</th>
                 <th>Estado</th>
                 <th></th>
@@ -159,25 +150,32 @@ export default function Products() {
                     </div>
                   </td>
                   <td>{CATEGORIES.find((c) => c.slug === p.category)?.name || p.category}</td>
-                  <td>
-                    <div className="price-cell">
+                  <td className="num">
+                    <div className="price-cell" style={{ alignItems: 'flex-end' }}>
                       <strong>{formatPrice(p.price)}</strong>
                       {p.oldPrice && (
-                        <span className="offer-pill"><Tag size={11} /> antes {formatPrice(p.oldPrice)}</span>
+                        <span className="offer-pill"><Tag size={11} aria-hidden="true" /> {formatPrice(p.oldPrice)}</span>
                       )}
                     </div>
                   </td>
-                  <td>{p.stock}</td>
+                  <td>
+                    <div className="stock-cell">
+                      <div className={`stock-bar ${Number(p.stock) <= 5 ? 'low' : ''}`} aria-hidden="true">
+                        <span style={{ width: `${Math.min(100, (Number(p.stock) / 120) * 100)}%` }} />
+                      </div>
+                      {p.stock}
+                    </div>
+                  </td>
                   <td>
                     <span className={`admin-status ${p.active ? 'done' : 'next'}`}>
                       {p.active ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
                   <td className="row-actions">
-                    <button className="icon-btn" onClick={() => openEdit(p)} aria-label="Editar"><Pencil size={15} /></button>
+                    <button className="icon-btn" onClick={() => openEdit(p)} aria-label={`Editar ${p.title}`}><Pencil size={16} /></button>
                     {p.active && (
-                      <button className="icon-btn danger" onClick={() => handleDeactivate(p)} aria-label="Desactivar">
-                        <Trash2 size={15} />
+                      <button className="icon-btn danger" onClick={() => handleDeactivate(p)} aria-label={`Desactivar ${p.title}`}>
+                        <Trash2 size={16} />
                       </button>
                     )}
                   </td>
@@ -193,8 +191,15 @@ export default function Products() {
           <form className="modal-card" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
             <div className="modal-head">
               <h2>{editing === 'new' ? 'Nuevo producto' : 'Editar producto'}</h2>
-              <button type="button" className="icon-btn" onClick={() => setEditing(null)}><X size={18} /></button>
+              <button type="button" className="icon-btn" onClick={() => setEditing(null)} aria-label="Cerrar"><X size={18} /></button>
             </div>
+
+            {form.image && (
+              <div className="modal-preview">
+                <img src={form.image} alt="" />
+                <span>Así se verá la foto principal en la tienda.</span>
+              </div>
+            )}
 
             <label>
               Nombre
@@ -220,7 +225,7 @@ export default function Products() {
                 <input type="number" min="0" value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))} required />
               </label>
               <label>
-                Precio antes de oferta <span className="hint">(opcional)</span>
+                Precio antes de oferta (opcional)
                 <input type="number" min="0" value={form.compareAtPrice} onChange={(e) => setForm((f) => ({ ...f, compareAtPrice: e.target.value }))} placeholder="Déjalo vacío si no hay descuento" />
               </label>
             </div>

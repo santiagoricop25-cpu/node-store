@@ -54,10 +54,15 @@ export default function Users() {
             <tbody>
               {users.map((u) => (
                 <tr key={u.id}>
-                  <td>{u.full_name}</td>
+                  <td>
+                    <div className="prod-cell">
+                      <span className="admin-user-avatar" aria-hidden="true">{u.full_name?.[0] || '?'}</span>
+                      <strong>{u.full_name}</strong>
+                    </div>
+                  </td>
                   <td>{u.email}</td>
-                  <td><span className={`admin-status ${u.role === 'admin' ? 'done' : 'next'}`}>{u.role}</span></td>
-                  <td>{u.email_verified_at ? 'Sí' : 'No'}</td>
+                  <td><span className={`admin-status ${u.role === 'admin' ? 'done' : 'next'}`}>{u.role === 'admin' ? 'Administrador' : 'Cliente'}</span></td>
+                  <td><span className={`admin-status ${u.email_verified_at ? 'done' : 'wip'}`}>{u.email_verified_at ? 'Verificado' : 'Pendiente'}</span></td>
                   <td>{formatDate(u.created_at)}</td>
                 </tr>
               ))}

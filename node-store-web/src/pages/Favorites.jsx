@@ -1,30 +1,33 @@
 import { Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import ProductCard from '../components/ProductCard.jsx';
 import Reveal from '../components/Reveal.jsx';
 import './Favorites.css';
 
 export default function Favorites() {
-  const { items } = useWishlist();
+  const { items, clear } = useWishlist();
 
   if (items.length === 0) {
     return (
-      <div className="container favorites-empty">
-        <Heart size={48} strokeWidth={1.5} className="icon-float" />
+      <div className="container empty-page">
         <h1>Aún no tienes favoritos</h1>
-        <p>Toca el corazón en cualquier producto para guardarlo aquí.</p>
-        <Link to="/" className="btn btn-buy">Ir a la tienda</Link>
+        <p>Toca el corazón de cualquier producto y lo guardamos aquí para después.</p>
+        <Link to="/" className="btn btn-accent">Ver el catálogo</Link>
       </div>
     );
   }
 
   return (
-    <div className="container favorites-page">
-      <h1>Mis favoritos ({items.length})</h1>
-      <div className="grid-4">
+    <div className="container page favorites-page">
+      <div className="section-head">
+        <h1 className="favorites-title">
+          Tus favoritos <span className="muted">· {items.length}</span>
+        </h1>
+        <button type="button" className="btn btn-ghost" onClick={clear}>Vaciar la lista</button>
+      </div>
+      <div className="product-grid">
         {items.map((p, i) => (
-          <Reveal key={p.id} delay={i * 40}>
+          <Reveal key={p.id} delay={(i % 4) * 60}>
             <ProductCard product={p} />
           </Reveal>
         ))}

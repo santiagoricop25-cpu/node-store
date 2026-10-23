@@ -18,7 +18,12 @@ export default function Login() {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.message || 'No pudimos iniciar sesión.');
+      const messages = {
+        invalid_credentials: 'El correo o la contraseña no coinciden.',
+        too_many_attempts: 'Demasiados intentos seguidos. Espera unos minutos.',
+        'Failed to fetch': 'No pudimos conectar con el servidor.',
+      };
+      setError(messages[err.message] || err.message || 'No pudimos iniciar sesión.');
     } finally {
       setLoading(false);
     }

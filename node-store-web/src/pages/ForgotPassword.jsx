@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
+import { friendlyError } from '../lib/errors.js';
 import './Auth.css';
 
 export default function ForgotPassword() {
@@ -17,7 +18,7 @@ export default function ForgotPassword() {
       await api.forgotPassword(email);
       setSent(true);
     } catch (err) {
-      setError(err.message || 'No pudimos procesar la solicitud.');
+      setError(friendlyError(err, 'No pudimos procesar la solicitud.'));
     } finally {
       setLoading(false);
     }
@@ -25,22 +26,21 @@ export default function ForgotPassword() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card card">
-        <div className="auth-eyebrow">// tienda.ricops.com</div>
+      <div className="auth-card">
         <h1>Recuperar contraseña</h1>
 
         {sent ? (
-          <div className="auth-success">
+          <div className="notice notice-ok" role="status">
             Si el correo existe, te enviamos un enlace para restablecer tu contraseña.
           </div>
         ) : (
           <form className="auth-form" onSubmit={handleSubmit}>
-            {error && <div className="auth-error">{error}</div>}
-            <label>
+            {error && <div className="notice notice-error" role="alert">{error}</div>}
+            <label className="field">
               Correo electrónico
               <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
             </label>
-            <button className="btn btn-buy btn-block" type="submit" disabled={loading}>
+            <button className="btn btn-accent btn-block" type="submit" disabled={loading}>
               {loading ? 'Enviando…' : 'Enviar enlace'}
             </button>
           </form>

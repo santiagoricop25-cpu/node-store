@@ -5,13 +5,13 @@
 // mínimo cuando ese endpoint exista.
 
 export const CATEGORIES = [
-  { slug: 'tecnologia', name: 'Tecnología', emoji: '💻' },
-  { slug: 'hogar', name: 'Hogar y Cocina', emoji: '🏠' },
-  { slug: 'moda', name: 'Moda', emoji: '👕' },
-  { slug: 'deportes', name: 'Deportes y Aire Libre', emoji: '🏋️' },
-  { slug: 'belleza', name: 'Belleza y Cuidado Personal', emoji: '💄' },
-  { slug: 'juguetes', name: 'Juguetes y Bebés', emoji: '🧸' },
-  { slug: 'herramientas', name: 'Herramientas', emoji: '🛠️' },
+  { slug: 'tecnologia', name: 'Tecnología' },
+  { slug: 'hogar', name: 'Hogar y Cocina' },
+  { slug: 'moda', name: 'Moda' },
+  { slug: 'deportes', name: 'Deportes y Aire Libre' },
+  { slug: 'belleza', name: 'Belleza y Cuidado Personal' },
+  { slug: 'juguetes', name: 'Juguetes y Bebés' },
+  { slug: 'herramientas', name: 'Herramientas' },
 ];
 
 const RAW_PRODUCTS = [

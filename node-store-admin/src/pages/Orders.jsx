@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, ChevronUp, Truck } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { api } from '../lib/api.js';
 import { formatPrice, formatDate } from '../lib/format.js';
@@ -14,7 +14,7 @@ const PAYMENT_METHOD_LABELS = {
 };
 
 function StatusBadge({ value }) {
-  const tone = { pendiente: 'wip', confirmado: 'done', enviado: 'done', entregado: 'done', cancelado: 'next' }[value] || 'wip';
+  const tone = { pendiente: 'wip', confirmado: 'next', enviado: 'next', entregado: 'done', cancelado: 'bad' }[value] || 'wip';
   return <span className={`admin-status ${tone}`}>{value}</span>;
 }
 
@@ -56,7 +56,7 @@ export default function Orders() {
   return (
     <div className="admin-page">
       <h1>Pedidos</h1>
-      <p className="admin-subtitle">A dónde enviar, si ya pagaron y en qué va cada pedido — todo desde aquí.</p>
+      <p className="admin-subtitle">A dónde enviar, si ya pagaron y en qué va cada pedido, todo desde aquí.</p>
 
       <div className="admin-toolbar">
         <input
@@ -90,13 +90,13 @@ export default function Orders() {
               <div className="order-card" key={o.id}>
                 <button className="order-summary" onClick={() => setOpenId(open ? null : o.id)}>
                   <div className="order-summary-main">
-                    <strong className="mono">{o.orderNumber}</strong>
+                    <strong>{o.orderNumber}</strong>
                     <span>{o.customer?.name || o.customer?.email || 'Cliente'}</span>
                     <span className="muted">{formatDate(o.createdAt)}</span>
                   </div>
                   <div className="order-summary-tags">
                     <StatusBadge value={o.status} />
-                    <span className={`admin-status ${o.paymentStatus === 'pagado' ? 'done' : o.paymentStatus === 'fallido' ? 'next' : 'wip'}`}>
+                    <span className={`admin-status ${o.paymentStatus === 'pagado' ? 'done' : o.paymentStatus === 'fallido' ? 'bad' : o.paymentStatus === 'reembolsado' ? 'next' : 'wip'}`}>
                       pago: {o.paymentStatus}
                     </span>
                     <strong>{formatPrice(o.total)}</strong>
@@ -109,8 +109,8 @@ export default function Orders() {
                     <div className="order-detail-grid">
                       <div>
                         <h4>Dirección de envío</h4>
-                        <p>{o.shippingAddress?.label ? `${o.shippingAddress.label} — ` : ''}{o.shippingAddress?.line}</p>
-                        <p className="mono">{o.shippingAddress?.phone}</p>
+                        <p>{o.shippingAddress?.label ? `${o.shippingAddress.label} · ` : ''}{o.shippingAddress?.line}</p>
+                        <p>{o.shippingAddress?.phone}</p>
                       </div>
                       <div>
                         <h4>Contacto</h4>
@@ -129,7 +129,7 @@ export default function Orders() {
                       {o.items.map((it, i) => (
                         <li key={i}>
                           <span>{it.title} × {it.quantity}</span>
-                          <span className="mono">{formatPrice(it.price * it.quantity)}</span>
+                          <span>{formatPrice(it.price * it.quantity)}</span>
                         </li>
                       ))}
                     </ul>
@@ -156,7 +156,7 @@ export default function Orders() {
                         </select>
                       </label>
                       <label className="tracking-input">
-                        <Truck size={14} /> Guía de envío
+                        Guía de envío
                         <input
                           defaultValue={o.trackingNumber || ''}
                           placeholder="Número de guía"

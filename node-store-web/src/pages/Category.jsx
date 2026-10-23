@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
+import { SlidersHorizontal } from 'lucide-react';
 import { CATEGORIES, getCategory, getProductsByCategory, searchProducts } from '../data/catalog.js';
 import { useProducts } from '../context/ProductsContext.jsx';
 import ProductCard from '../components/ProductCard.jsx';
@@ -12,6 +13,12 @@ const SORTS = [
   { value: 'price-asc', label: 'Menor precio' },
   { value: 'price-desc', label: 'Mayor precio' },
   { value: 'rating', label: 'Mejor calificados' },
+];
+
+const RATINGS = [
+  { value: 0, label: 'Todas' },
+  { value: 4, label: '4 o más' },
+  { value: 4.5, label: '4,5 o más' },
 ];
 
 export default function Category() {
@@ -27,6 +34,7 @@ export default function Category() {
   const [maxPrice, setMaxPrice] = useState(null);
   const [minRating, setMinRating] = useState(0);
   const [freeShippingOnly, setFreeShippingOnly] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const priceCeiling = useMemo(
     () => Math.max(...baseProducts.map((p) => p.price), 100000),
@@ -50,95 +58,130 @@ export default function Category() {
     }
   }, [baseProducts, sort, maxPrice, minRating, freeShippingOnly]);
 
-  const title = category ? category.name : `Resultados para "${query}"`;
-  const breadcrumbTail = category ? category.name : 'Búsqueda';
+  const title = category ? category.name : query ? `Resultados para «${query}»` : 'Buscar';
+  const hasFilters = maxPrice != null || minRating > 0 || freeShippingOnly;
+
+  function resetFilters() {
+    setMaxPrice(null);
+    setMinRating(0);
+    setFreeShippingOnly(false);
+  }
 
   return (
-    <div className="container category-page">
-      <nav className="breadcrumb">
-        <Link to="/">Inicio</Link> / <span>Catálogo</span> / <span>{breadcrumbTail}</span>
+    <div className="container page category-page">
+      <nav className="breadcrumb" aria-label="Ruta">
+        <Link to="/">Inicio</Link> / <span>{category ? category.name : 'Búsqueda'}</span>
       </nav>
 
+      <div className="results-head">
+        <h1>{title}</h1>
+        <div className="results-controls">
+          <p className="results-count">
+            {filtered.length} {filtered.length === 1 ? 'producto' : 'productos'}
+            {hasFilters && ` de ${baseProducts.length}`}
+          </p>
+          <button
+            type="button"
+            className="btn btn-sm filters-toggle"
+            onClick={() => setFiltersOpen((v) => !v)}
+            aria-expanded={filtersOpen}
+          >
+            <SlidersHorizontal size={16} /> {filtersOpen ? 'Ocultar filtros' : 'Filtros'}
+          </button>
+          <label className="sort">
+            <span>Ordenar por</span>
+            <select value={sort} onChange={(e) => setSort(e.target.value)}>
+              {SORTS.map((s) => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </div>
+
       <div className="category-layout">
-        <aside className="filters-sidebar">
+        <aside className={`filters ${filtersOpen ? 'open' : ''}`} aria-label="Filtros">
           <div className="filter-block">
-            <h4>Categoría</h4>
+            <h2>Categorías</h2>
             <ul className="filter-cats">
               {CATEGORIES.map((c) => (
                 <li key={c.slug}>
-                  <Link to={`/categoria/${c.slug}`} className={c.slug === slug ? 'active' : ''}>
-                    <span>{c.emoji} {c.name}</span>
-                    <span className="cat-count mono">{getProductsByCategory(c.slug).length}</span>
+                  <Link to={`/categoria/${c.slug}`} className={c.slug === slug ? 'active' : ''} aria-current={c.slug === slug ? 'page' : undefined}>
+                    <span>{c.name}</span>
+                    <span className="cat-count">{getProductsByCategory(c.slug).length}</span>
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          <details className="filter-block accordion" open>
-            <summary>Precio máximo</summary>
+          <div className="filter-block">
+            <h2 id="price-label">Precio máximo</h2>
+            <p className="filter-price-value">hasta {formatPrice(maxPrice ?? priceCeiling)}</p>
             <input
               type="range"
+              aria-labelledby="price-label"
               min={0}
               max={priceCeiling}
               step={10000}
               value={maxPrice ?? priceCeiling}
               onChange={(e) => setMaxPrice(Number(e.target.value))}
             />
-            <div className="filter-price-value mono">hasta {formatPrice(maxPrice ?? priceCeiling)}</div>
-          </details>
+          </div>
 
-          <details className="filter-block accordion" open>
-            <summary>Calificación mínima</summary>
-            {[4.5, 4, 3.5, 0].map((r) => (
-              <label key={r} className="filter-radio">
-                <input
-                  type="radio"
-                  name="rating"
-                  checked={minRating === r}
-                  onChange={() => setMinRating(r)}
-                />
-                {r > 0 ? `${r}+ estrellas` : 'Todas'}
-              </label>
-            ))}
-          </details>
+          <fieldset className="filter-block">
+            <legend>Calificación</legend>
+            <div className="segmented">
+              {RATINGS.map((r) => (
+                <label key={r.value} className={minRating === r.value ? 'active' : ''}>
+                  <input
+                    type="radio"
+                    name="rating"
+                    checked={minRating === r.value}
+                    onChange={() => setMinRating(r.value)}
+                  />
+                  {r.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
 
-          <details className="filter-block accordion">
-            <summary>Envío</summary>
-            <label className="filter-checkbox">
+          <div className="filter-block">
+            <label className="filter-check">
               <input
                 type="checkbox"
                 checked={freeShippingOnly}
                 onChange={(e) => setFreeShippingOnly(e.target.checked)}
               />
-              Solo envío gratis
+              Solo con envío gratis
             </label>
-          </details>
+          </div>
+
+          {hasFilters && (
+            <button type="button" className="btn btn-ghost" onClick={resetFilters}>Quitar filtros</button>
+          )}
         </aside>
 
-        <section className="results">
-          <div className="results-head">
-            <h1>{title}</h1>
-            <div className="results-controls">
-              <span className="results-count">Productos seleccionados: {filtered.length}</span>
-              <select value={sort} onChange={(e) => setSort(e.target.value)}>
-                {SORTS.map((s) => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+        <section className="results" aria-label="Productos">
 
           {filtered.length === 0 ? (
             <div className="empty-state">
-              <p>No encontramos productos con esos filtros.</p>
+              <h2>{baseProducts.length === 0 ? 'No encontramos nada con esa búsqueda' : 'Ningún producto cumple esos filtros'}</h2>
+              <p>
+                {baseProducts.length === 0
+                  ? 'Prueba con otra palabra, o recorre las categorías de la izquierda.'
+                  : 'Sube el precio máximo o quita algún filtro para ver más.'}
+              </p>
+              {hasFilters ? (
+                <button type="button" className="btn btn-accent" onClick={resetFilters}>Quitar filtros</button>
+              ) : (
+                <Link to="/" className="btn btn-accent">Volver al inicio</Link>
+              )}
             </div>
           ) : (
-            <div className="results-grid">
+            <div className="product-grid">
               {filtered.map((p, i) => (
-                <Reveal key={p.id} delay={(i % 6) * 40}>
+                <Reveal key={p.id} delay={(i % 4) * 60}>
                   <ProductCard product={p} />
                 </Reveal>
               ))}

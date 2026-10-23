@@ -1,119 +1,125 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingCart, User, Menu, X } from 'lucide-react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Search, Menu, X } from 'lucide-react';
+import { CATEGORIES } from '../data/catalog.js';
 import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import './Header.css';
 
+// Marca el contador con un pequeño salto cada vez que cambia.
+function usePop(value) {
+  const [pop, setPop] = useState(false);
+  const prev = useRef(value);
+  useEffect(() => {
+    if (value === prev.current) return undefined;
+    prev.current = value;
+    setPop(true);
+    const t = setTimeout(() => setPop(false), 350);
+    return () => clearTimeout(t);
+  }, [value]);
+  return pop;
+}
+
 export default function Header() {
   const [query, setQuery] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
-  const [cartPop, setCartPop] = useState(false);
-  const [wishPop, setWishPop] = useState(false);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { count } = useCart();
   const { count: wishCount } = useWishlist();
   const { user, isAuthed } = useAuth();
-  const prevCount = useRef(count);
-  const prevWishCount = useRef(wishCount);
+  const cartPop = usePop(count);
+  const wishPop = usePop(wishCount);
 
-  useEffect(() => {
-    if (count !== prevCount.current) {
-      setCartPop(true);
-      prevCount.current = count;
-      const t = setTimeout(() => setCartPop(false), 350);
-      return () => clearTimeout(t);
-    }
-    return undefined;
-  }, [count]);
-
-  useEffect(() => {
-    if (wishCount !== prevWishCount.current) {
-      setWishPop(true);
-      prevWishCount.current = wishCount;
-      const t = setTimeout(() => setWishPop(false), 350);
-      return () => clearTimeout(t);
-    }
-    return undefined;
-  }, [wishCount]);
+  useEffect(() => setMenuOpen(false), [pathname]);
 
   function onSubmit(e) {
     e.preventDefault();
-    if (query.trim()) {
-      navigate(`/buscar?q=${encodeURIComponent(query.trim())}`);
-      setMenuOpen(false);
-    }
+    if (query.trim()) navigate(`/buscar?q=${encodeURIComponent(query.trim())}`);
   }
 
+  const firstName = user?.full_name?.split(' ')[0];
+
   return (
+    <>
+    <p className="utility-bar">
+      Envío regular gratis y pago contra entrega en todos los pedidos.{' '}
+      <Link to="/#rebajas" className="link">Ver rebajas ›</Link>
+    </p>
     <header className="site-header">
-      <div className="container main-bar">
-        <button
-          type="button"
-          className="menu-toggle icon-btn"
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-label="Abrir menú"
-        >
-          {menuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+      <div className="container header-bar">
+        <Link to="/" className="brand">tienda</Link>
 
-        <Link to="/" className="brand">
-          tienda
-        </Link>
-
-        <form className="search-bar" onSubmit={onSubmit} role="search">
+        <form className="header-search" onSubmit={onSubmit} role="search">
+          <label htmlFor="header-q" className="visually-hidden">Buscar productos</label>
           <input
+            id="header-q"
             type="search"
-            placeholder="Search"
+            placeholder="Buscar productos, marcas…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            aria-label="Buscar productos"
           />
-          <button type="submit" aria-label="Buscar" className="icon-anim">
-            <Search size={16} />
+          <button type="submit" aria-label="Buscar">
+            <Search size={18} />
           </button>
         </form>
 
-        <nav className="main-nav">
-          <Link to="/">Inicio</Link>
-          <Link to="/categoria/tecnologia">Categorías</Link>
-          <Link to="/favoritos">Ofertas</Link>
+        <nav className="header-links" aria-label="Principal">
+          <NavLink to="/favoritos">
+            Favoritos {wishCount > 0 && <span className={`count ${wishPop ? 'badge-pop' : ''}`}>{wishCount}</span>}
+          </NavLink>
+          <NavLink to={isAuthed ? '/cuenta' : '/ingresar'}>
+            {isAuthed ? firstName || 'Mi cuenta' : 'Ingresar'}
+          </NavLink>
+          <Link to="/carrito" className="header-cart">
+            Carrito <span className={`count ${cartPop ? 'badge-pop' : ''}`}>{count}</span>
+          </Link>
         </nav>
 
-        <div className="header-icons">
-          <Link to="/favoritos" className="icon-btn icon-anim" aria-label="Favoritos">
-            <Heart size={21} className={wishPop ? 'heart-pop' : ''} fill={wishCount > 0 ? 'currentColor' : 'none'} />
-            {wishCount > 0 && <span className={`cart-badge ${wishPop ? 'badge-pop' : ''}`}>{wishCount}</span>}
-          </Link>
-          <Link to="/carrito" className="icon-btn icon-anim cart-icon" aria-label="Carrito">
-            <ShoppingCart size={21} className={cartPop ? 'icon-wiggle' : ''} />
-            {count > 0 && <span className={`cart-badge ${cartPop ? 'badge-pop' : ''}`}>{count}</span>}
-          </Link>
-          <Link to={isAuthed ? '/cuenta' : '/ingresar'} className="icon-btn icon-anim account-icon" aria-label="Cuenta" title={isAuthed ? user?.full_name : 'Ingresar'}>
-            <User size={21} />
-          </Link>
-        </div>
+        <button
+          type="button"
+          className="menu-toggle"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-menu"
+          aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+        >
+          {menuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
-      <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
+      <nav className="container header-cats" aria-label="Categorías">
+        {CATEGORIES.map((c) => (
+          <NavLink key={c.slug} to={`/categoria/${c.slug}`}>{c.name}</NavLink>
+        ))}
+      </nav>
+
+      <div id="mobile-menu" className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
         <form className="mobile-search" onSubmit={onSubmit} role="search">
-          <Search size={16} />
+          <label htmlFor="mobile-q" className="visually-hidden">Buscar productos</label>
           <input
+            id="mobile-q"
+            className="input"
             type="search"
             placeholder="Buscar productos"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
+          <button type="submit" className="btn btn-accent" aria-label="Buscar"><Search size={18} /></button>
         </form>
-        <Link to="/" onClick={() => setMenuOpen(false)}>Inicio</Link>
-        <Link to="/categoria/tecnologia" onClick={() => setMenuOpen(false)}>Categorías</Link>
-        <Link to="/favoritos" onClick={() => setMenuOpen(false)}>Favoritos</Link>
-        <Link to="/carrito" onClick={() => setMenuOpen(false)}>Carrito</Link>
-        <Link to={isAuthed ? '/cuenta' : '/ingresar'} onClick={() => setMenuOpen(false)}>
-          {isAuthed ? 'Mi cuenta' : 'Ingresar'}
-        </Link>
+        <div className="mobile-links">
+          <Link to="/carrito">Carrito ({count})</Link>
+          <Link to="/favoritos">Favoritos ({wishCount})</Link>
+          <Link to={isAuthed ? '/cuenta' : '/ingresar'}>{isAuthed ? 'Mi cuenta' : 'Ingresar'}</Link>
+        </div>
+        <div className="mobile-cats">
+          {CATEGORIES.map((c) => (
+            <Link key={c.slug} to={`/categoria/${c.slug}`}>{c.name}</Link>
+          ))}
+        </div>
       </div>
     </header>
+    </>
   );
 }

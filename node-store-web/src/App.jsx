@@ -18,10 +18,16 @@ import Account from './pages/Account.jsx';
 import NotFound from './pages/NotFound.jsx';
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   useEffect(() => {
+    // Enlaces como /#rebajas bajan a su sección; el resto empieza arriba.
+    if (hash) {
+      const t = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' }), 60);
+      return () => clearTimeout(t);
+    }
     window.scrollTo(0, 0);
-  }, [pathname]);
+    return undefined;
+  }, [pathname, hash]);
   return null;
 }
 
