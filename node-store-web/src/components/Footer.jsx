@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="container">
         <h2 id="footer-title" className="footer-title">tienda</h2>
         <p className="footer-note">
-          Precios en pesos colombianos con impuesto estimado del 2 %. Envío regular gratis en 5 a 7 días
+          Precios en pesos colombianos. Envío regular gratis en 5 a 7 días
           hábiles; express en 1 a 2 días por $12.900. El pago en línea con tarjeta llega pronto: por ahora
           pagas contra entrega o por transferencia.
         </p>

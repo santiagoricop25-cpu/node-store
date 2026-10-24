@@ -13,6 +13,12 @@ const PAYMENT_METHOD_LABELS = {
   wompi: 'Wompi',
 };
 
+const SHIPPING_LABELS = {
+  free: 'Envío regular (gratis)',
+  express: 'Envío express',
+  schedule: 'Entrega programada',
+};
+
 function StatusBadge({ value }) {
   const tone = { pendiente: 'wip', confirmado: 'next', enviado: 'next', entregado: 'done', cancelado: 'bad' }[value] || 'wip';
   return <span className={`admin-status ${tone}`}>{value}</span>;
@@ -134,6 +140,7 @@ export default function Orders() {
                         <h4>Dirección de envío</h4>
                         <p>{o.shippingAddress?.label ? `${o.shippingAddress.label} · ` : ''}{o.shippingAddress?.line}</p>
                         <p>{o.shippingAddress?.phone}</p>
+                        {SHIPPING_LABELS[o.shippingAddress?.method] && <p>{SHIPPING_LABELS[o.shippingAddress.method]}</p>}
                       </div>
                       <div>
                         <h4>Contacto</h4>

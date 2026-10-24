@@ -124,8 +124,8 @@ export default function Checkout() {
 
   const shipping = SHIPPING_METHODS.find((m) => m.id === shipMethod);
   const shippingPrice = shipping?.price || 0;
-  const tax = Math.round(subtotal * 0.02);
-  const total = subtotal + shippingPrice + tax;
+  // Por ahora no se cobran impuestos aparte: total = productos + envío elegido.
+  const total = subtotal + shippingPrice;
   const address = addresses.find((a) => a.id === addressId);
 
   async function handlePay(e) {
@@ -148,6 +148,7 @@ export default function Checkout() {
             line: address.line,
             phone: address.phone,
           },
+          shippingMethod: shipMethod,
           paymentMethod,
           customer: { name: user?.full_name, email: user?.email, phone: address.phone },
         },
@@ -381,7 +382,6 @@ export default function Checkout() {
             {address && <div><dt>Envío a</dt><dd>{address.line}</dd></div>}
             {step > 1 && <div><dt>Método</dt><dd>{shipping?.label}</dd></div>}
             <div><dt>Subtotal</dt><dd>{formatPrice(subtotal)}</dd></div>
-            <div><dt>Impuesto estimado</dt><dd>{formatPrice(tax)}</dd></div>
             <div><dt>Envío</dt><dd>{shippingPrice === 0 ? 'Gratis' : formatPrice(shippingPrice)}</dd></div>
             <div className="summary-total"><dt>Total</dt><dd>{formatPrice(total)}</dd></div>
           </dl>

@@ -18,10 +18,9 @@ export default function Cart() {
     );
   }
 
-  // El envío se elige en el checkout (el regular es gratis), así que aquí solo
-  // se suma el impuesto estimado, igual que en el paso de pago.
-  const tax = Math.round(subtotal * 0.02);
-  const total = subtotal + tax;
+  // Por ahora no se cobran impuestos aparte y el envío se elige en el checkout
+  // (el regular es gratis), así que aquí el total es el subtotal.
+  const total = subtotal;
 
   return (
     <div className="container page cart-page">
@@ -60,7 +59,6 @@ export default function Cart() {
           <h2 id="summary-title">Resumen</h2>
           <dl>
             <div><dt>Subtotal</dt><dd>{formatPrice(subtotal)}</dd></div>
-            <div><dt>Impuesto estimado</dt><dd>{formatPrice(tax)}</dd></div>
             <div><dt>Envío</dt><dd>Se elige al pagar</dd></div>
             <div className="summary-total"><dt>Total</dt><dd>{formatPrice(total)}</dd></div>
           </dl>
