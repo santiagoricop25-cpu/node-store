@@ -41,6 +41,19 @@ const SHIPPING_METHODS = [
 const TAGS = { HOME: 'Casa', OFICINA: 'Oficina' };
 const EMPTY_FORM = { label: '', tag: 'HOME', line: '', phone: '' };
 
+// Las mismas reglas que exige la API; si no se cumplen, el pedido se rechaza.
+function addressProblem(a) {
+  if (!a) return 'Elige o agrega una dirección de envío.';
+  if ((a.line || '').trim().length < 5) return 'La dirección está incompleta: escribe calle, número, barrio y ciudad.';
+  if ((a.phone || '').replace(/\D/g, '').length < 7) return 'El teléfono debe tener al menos 7 números.';
+  return null;
+}
+
+const ORDER_ERRORS = {
+  insufficient_stock: 'Uno de los productos ya no tiene unidades suficientes. Revisa tu carrito.',
+  product_unavailable: 'Uno de los productos ya no está disponible. Revisa tu carrito.',
+};
+
 export default function Checkout() {
   const { items, subtotal, clear } = useCart();
   const { user, isAuthed, status, accessToken } = useAuth();
@@ -50,6 +63,7 @@ export default function Checkout() {
   const [addressId, setAddressId] = useState(() => loadAddresses()[0]?.id);
   const [showAddForm, setShowAddForm] = useState(() => loadAddresses().length === 0);
   const [addrForm, setAddrForm] = useState(EMPTY_FORM);
+  const [addrError, setAddrError] = useState(null);
   const [shipMethod, setShipMethod] = useState('free');
   const [paymentMethod, setPaymentMethod] = useState('contra_entrega');
   const [placing, setPlacing] = useState(false);
@@ -130,7 +144,11 @@ export default function Checkout() {
 
   async function handlePay(e) {
     e.preventDefault();
-    if (!address) return;
+    const problem = addressProblem(address);
+    if (problem) {
+      setPlaceError(`${problem} Vuelve al paso de dirección para corregirla.`);
+      return;
+    }
     setPlacing(true);
     setPlaceError(null);
     try {
@@ -157,10 +175,15 @@ export default function Checkout() {
       setPlacedOrder(order);
       clear();
     } catch (err) {
+      const code = err instanceof ApiError ? err.data?.error : null;
+      const badAddress = code === 'validation_error' && err.data?.details?.fieldErrors?.shippingAddress;
       setPlaceError(
-        err instanceof ApiError
-          ? 'No pudimos registrar tu pedido. Intenta de nuevo en un momento.'
-          : 'No hay conexión con el servidor. Revisa tu internet e intenta de nuevo.'
+        badAddress
+          ? 'Revisa la dirección de envío: debe estar completa y el teléfono tener al menos 7 números.'
+          : ORDER_ERRORS[code] ||
+            (err instanceof ApiError
+              ? 'No pudimos registrar tu pedido. Intenta de nuevo en un momento.'
+              : 'No hay conexión con el servidor. Revisa tu internet e intenta de nuevo.')
       );
     } finally {
       setPlacing(false);
@@ -170,6 +193,12 @@ export default function Checkout() {
   function handleSaveAddress(e) {
     e.preventDefault();
     if (!addrForm.label || !addrForm.line || !addrForm.phone) return;
+    const problem = addressProblem(addrForm);
+    if (problem) {
+      setAddrError(problem);
+      return;
+    }
+    setAddrError(null);
     const newAddr = { ...addrForm, id: `a${Date.now()}` };
     setAddresses((prev) => [...prev, newAddr]);
     setAddressId(newAddr.id);
@@ -280,8 +309,10 @@ export default function Checkout() {
                       required
                       autoComplete="tel"
                       inputMode="tel"
+                      placeholder="300 123 4567"
                     />
                   </label>
+                  {addrError && <div className="notice notice-error" role="alert">{addrError}</div>}
                   <div className="step-actions">
                     {addresses.length > 0 && (
                       <button type="button" className="btn" onClick={() => setShowAddForm(false)}>Cancelar</button>
@@ -295,9 +326,21 @@ export default function Checkout() {
                 </button>
               )}
 
+              {!showAddForm && address && addressProblem(address) && (
+                <div className="notice notice-error" role="alert">
+                  {addressProblem(address)} Elimina esta dirección con la X y agrégala de nuevo.
+                </div>
+              )}
+
               <div className="step-actions">
                 <Link to="/carrito" className="btn">Volver al carrito</Link>
-                <button className="btn btn-accent" onClick={() => setStep(2)} disabled={!address}>Continuar</button>
+                <button
+                  className="btn btn-accent"
+                  onClick={() => { setPlaceError(null); setStep(2); }}
+                  disabled={!address || Boolean(addressProblem(address))}
+                >
+                  Continuar
+                </button>
               </div>
             </section>
           )}
