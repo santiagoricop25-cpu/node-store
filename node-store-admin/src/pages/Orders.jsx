@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { api } from '../lib/api.js';
 import { formatPrice, formatDate } from '../lib/format.js';
@@ -28,20 +28,43 @@ export default function Orders() {
   const [openId, setOpenId] = useState(null);
   const [savingId, setSavingId] = useState(null);
 
-  function load() {
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+
+  // La API entrega los pedidos de 20 en 20: sin paginar solo se verían los más recientes.
+  function load(pageNumber = page) {
     api
       .orders(accessToken, {
         ...(statusFilter ? { status: statusFilter } : {}),
         ...(paymentFilter ? { paymentStatus: paymentFilter } : {}),
         ...(search ? { search } : {}),
+        page: pageNumber,
       })
-      .then(({ orders: rows }) => setOrders(rows))
+      .then(({ orders: rows, total: count, pageSize: size }) => {
+        setOrders(rows);
+        setTotal(count ?? rows.length);
+        setPageSize(size || 20);
+        setError(null);
+      })
       .catch(() => setError('No pudimos cargar los pedidos.'));
   }
 
-  useEffect(load, [accessToken, statusFilter, paymentFilter]);
+  useEffect(() => load(page), [accessToken, statusFilter, paymentFilter, page]);
+
+  function runSearch() {
+    if (page === 1) load(1);
+    else setPage(1);
+  }
 
   async function handleUpdate(order, patch) {
+    // Marcar como enviado sin guía: el correo al cliente saldría sin número de seguimiento.
+    if (patch.status === 'enviado' && !order.trackingNumber) {
+      const ok = window.confirm(
+        'Este pedido todavía no tiene guía de envío. El cliente recibirá el aviso de envío sin número de guía (cuando la agregues le llegará otro correo). ¿Marcarlo como enviado?'
+      );
+      if (!ok) return;
+    }
     setSavingId(order.id);
     try {
       const { order: updated } = await api.updateOrder(accessToken, order.id, patch);
@@ -63,17 +86,17 @@ export default function Orders() {
           placeholder="Buscar por # de pedido, correo o nombre…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && load()}
+          onKeyDown={(e) => e.key === 'Enter' && runSearch()}
         />
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
           <option value="">Todos los estados</option>
           {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value)}>
+        <select value={paymentFilter} onChange={(e) => { setPaymentFilter(e.target.value); setPage(1); }}>
           <option value="">Todos los pagos</option>
           {PAYMENT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <button className="btn" onClick={load}>Buscar</button>
+        <button className="btn" onClick={runSearch}>Buscar</button>
       </div>
 
       {error && <div className="admin-error">{error}</div>}
@@ -116,6 +139,7 @@ export default function Orders() {
                         <h4>Contacto</h4>
                         <p>{o.customer?.name || '—'}</p>
                         <p>{o.customer?.email || '—'}</p>
+                        {!o.customer?.email && <p className="order-nomail">Sin correo: no recibirá avisos</p>}
                       </div>
                       <div>
                         <h4>Pago</h4>
@@ -168,12 +192,30 @@ export default function Orders() {
                         />
                       </label>
                     </div>
+                    <p className="order-mail-note">
+                      <Mail size={14} aria-hidden="true" /> Cada cambio de estado, de pago o de guía le llega al cliente por correo.
+                    </p>
                   </div>
                 )}
               </div>
             );
           })}
         </div>
+      )}
+
+      {orders && total > pageSize && (
+        <nav className="pager" aria-label="Páginas">
+          <span className="muted">{total} pedidos</span>
+          <div className="pager-buttons">
+            <button type="button" className="btn btn-sm" disabled={page <= 1} onClick={() => setPage((n) => Math.max(1, n - 1))}>
+              <ChevronLeft size={16} aria-hidden="true" /> Anterior
+            </button>
+            <span className="pager-count">Página {page} de {Math.ceil(total / pageSize)}</span>
+            <button type="button" className="btn btn-sm" disabled={page >= Math.ceil(total / pageSize)} onClick={() => setPage((n) => n + 1)}>
+              Siguiente <ChevronRight size={16} aria-hidden="true" />
+            </button>
+          </div>
+        </nav>
       )}
     </div>
   );

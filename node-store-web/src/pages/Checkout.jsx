@@ -111,9 +111,13 @@ export default function Checkout() {
         <p className="order-number">Pedido {placedOrder.orderNumber}</p>
         <p>
           Tu pedido quedó registrado por <strong>{formatPrice(placedOrder.total)}</strong> con{' '}
-          {methodLabel?.toLowerCase()}. Te contactamos cuando confirmemos el envío.
+          {methodLabel?.toLowerCase()}. Te enviamos el resumen a <strong>{user?.email}</strong> y te avisaremos por
+          correo cuando confirmemos el pedido, el pago y el envío con su guía.
         </p>
-        <Link to="/" className="btn btn-accent">Volver a la tienda</Link>
+        <div className="actions">
+          <Link to="/cuenta" className="btn btn-accent">Ver mis pedidos</Link>
+          <Link to="/" className="btn">Volver a la tienda</Link>
+        </div>
       </div>
     );
   }

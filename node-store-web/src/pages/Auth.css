@@ -38,6 +38,25 @@
 .account-data dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 .account-actions { display: flex; gap: var(--space-3); margin-top: var(--space-6); flex-wrap: wrap; }
 
+/* Mis pedidos */
+.account-orders { margin-top: var(--section); }
+.account-orders h2 { font-size: var(--step-head); margin-bottom: var(--space-2); }
+.account-orders > .muted { margin-bottom: var(--title-gap); }
+.order-list-store { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--gap); }
+.order-card-store { background: var(--surface); border-radius: var(--radius-card); padding: var(--card-pad); }
+.order-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); flex-wrap: wrap; }
+.order-head > div { display: flex; flex-direction: column; }
+.order-head > div .muted { font-size: var(--step-small); }
+.order-steps { list-style: none; margin: var(--space-6) 0 var(--space-5); padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
+.order-steps li { display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--step-small); color: var(--muted); }
+.order-steps .step-dot { display: block; height: 6px; border-radius: var(--radius-pill); background: var(--surface-2); }
+.order-steps .done .step-dot, .order-steps .now .step-dot { background: var(--accent); }
+.order-steps .now { color: var(--ink); font-weight: 600; }
+.order-steps .done { color: var(--ink-2); }
+.order-cancelled { margin: var(--space-5) 0; color: var(--bad); font-weight: 600; }
+.order-meta { margin: 0; font-size: var(--step-small); color: var(--ink-2); }
+.order-items-line { margin: var(--space-2) 0 0; font-size: var(--step-small); color: var(--muted); }
+
 @media (max-width: 800px) {
   .account-layout { grid-template-columns: 1fr; gap: 32px; }
   .account-data > div { grid-template-columns: 1fr; gap: 2px; }

@@ -488,6 +488,29 @@ strong { font-weight: 600; }
 .order-controls label { min-width: 180px; margin-bottom: 0 !important; }
 .tracking-input { display: flex; flex-direction: column; gap: var(--space-2); }
 
+
+/* ---------- Paginación (usuarios y pedidos) ---------- */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  font-size: 14px;
+}
+.pager-buttons { display: flex; align-items: center; gap: var(--space-3); }
+.pager-count { font-variant-numeric: tabular-nums; }
+
+.order-nomail { color: var(--warn); font-size: 13px; }
+.order-mail-note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-5) 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
 /* ---------- Responsive ---------- */
 @media (max-width: 860px) {
   .admin-shell { flex-direction: column; }
