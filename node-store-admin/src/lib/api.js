@@ -61,11 +61,27 @@ export const api = {
   updateOrder: (accessToken, id, body) =>
     request(`/admin/orders/${id}`, { method: 'PATCH', body, accessToken }),
 
+  // La API entrega los pedidos de 20 en 20; el dashboard necesita todos los de
+  // los últimos días, así que se recorren las páginas (con un tope de seguridad).
+  allOrders: async (accessToken, { maxPages = 25 } = {}) => {
+    const first = await request('/admin/orders?page=1', { accessToken });
+    const orders = [...(first.orders || [])];
+    const pages = Math.min(maxPages, Math.ceil((first.total || 0) / (first.pageSize || 20)));
+    for (let p = 2; p <= pages; p += 1) {
+      const next = await request(`/admin/orders?page=${p}`, { accessToken });
+      orders.push(...(next.orders || []));
+    }
+    return { orders, total: first.total || orders.length, truncated: (first.total || 0) > orders.length };
+  },
+
   // --- Usuarios ---
   users: (accessToken, params = {}) => {
     const qs = new URLSearchParams(params).toString();
     return request(`/admin/users${qs ? `?${qs}` : ''}`, { accessToken });
   },
+  // Da o quita permisos de administrador: role = 'admin' | 'customer'.
+  setUserRole: (accessToken, id, role) =>
+    request(`/admin/users/${id}`, { method: 'PATCH', body: { role }, accessToken }),
 };
 
 export { ApiError, API_URL };

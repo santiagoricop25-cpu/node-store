@@ -56,16 +56,20 @@ export default function Dashboard() {
   const [range, setRange] = useState(14);
   const [metric, setMetric] = useState('ventas');
   const [updatedAt, setUpdatedAt] = useState(null);
+  const [truncated, setTruncated] = useState(false);
 
   // Estadísticas, pedidos y productos; se refrescan solos cada minuto.
   useEffect(() => {
     let cancelled = false;
     const load = () =>
-      Promise.allSettled([api.stats(accessToken), api.orders(accessToken), api.products(accessToken)]).then(
+      Promise.allSettled([api.stats(accessToken), api.allOrders(accessToken), api.products(accessToken)]).then(
         ([s, o, p]) => {
           if (cancelled) return;
           if (s.status === 'fulfilled') setStats(s.value);
-          if (o.status === 'fulfilled') setOrders(o.value.orders || []);
+          if (o.status === 'fulfilled') {
+            setOrders(o.value.orders || []);
+            setTruncated(Boolean(o.value.truncated));
+          }
           if (p.status === 'fulfilled') setProducts(p.value.products || []);
           setError(s.status === 'rejected' && o.status === 'rejected' ? 'No pudimos cargar las estadísticas.' : null);
           setUpdatedAt(new Date());
@@ -210,6 +214,11 @@ export default function Dashboard() {
       </div>
 
       {error && <div className="admin-error">{error}</div>}
+      {truncated && (
+        <div className="admin-error">
+          Hay más de 500 pedidos: los gráficos usan solo los 500 más recientes, así que los periodos largos pueden salir incompletos.
+        </div>
+      )}
 
       <section className="kpi-grid" aria-label="Cifras principales">
         <div className="kpi kpi-hero">
